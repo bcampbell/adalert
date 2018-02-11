@@ -1,0 +1,6 @@
+
+content - content script, per page
+popup - browserAction, run when button is pressed.
+background - needed for content script to talk to popup
+
+

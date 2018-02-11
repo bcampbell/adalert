@@ -1,0 +1,15 @@
+#XYZZY_holder {
+    background-color: black;
+    color: white;
+    position: fixed;
+    z-index: 2147483647;
+    left: 8px;
+    top: 8px;
+    transform: rotate(-15deg);
+    width: 200px;
+    height: 100px;
+    border: 2px solid white;
+    padding: 8px;
+    box-shadow: 8px 8px 8px rgba(0,0,0,0.1);
+}
+
