@@ -6,7 +6,7 @@ function onError(error) {
 
 function sendMessageToTabs(tabs) {
   for (let tab of tabs) {
-    browser.tabs.sendMessage(
+    chrome.tabs.sendMessage(
       tab.id,
       {greeting: "Hi from background script"}
     ).then(response => {
@@ -18,7 +18,7 @@ function sendMessageToTabs(tabs) {
 }
 
 //browser.browserAction.onClicked.addListener(() => {
-  browser.tabs.query({
+  chrome.tabs.query({
     currentWindow: true,
     active: true
   }).then(sendMessageToTabs).catch(onError);
