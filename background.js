@@ -8,7 +8,6 @@ var foobar = 0;
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
         console.log("background.js: got ", request);
-        chrome.browserAction.setBadgeText({text: "XYZ", tabId: sender.tab.id});
         var n = request.warnings.length;
         if (n<0) {
             return;

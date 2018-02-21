@@ -138,9 +138,9 @@ function scanPage() {
 
     var hits = searchHTML(document.body, aus);
     if (hits.length>0) {
-        warnings.push({kind: 'missing_source',
+        warnings.push({kind: 'sponsored',
             level: 'possible',      // possible/certain
-            msg: "This article looks like it could contain Australians" /*,
+            msg: "This article looks like it could contain sponsored content" /*,
             indicators: hits*/ } );
     }
 
@@ -162,18 +162,19 @@ function scanPage() {
 
 var pageStatus = null;
 
-chrome.runtime.onMessage.addListener(request => {
-  console.log("content.js: Message from popup:");
-  console.log(request.greeting);
-  console.log("content.js: pageStatus is: ", pageStatus);
-  return Promise.resolve(pageStatus);
+browser.runtime.onMessage.addListener(request => {
+    console.log("content.js: incoming message: ", request);
+    if( request.action == "status") {
+        // popup is requesting the results of our page scan
+        return Promise.resolve(pageStatus);
+    }
 });
 
 
 pageStatus = scanPage();
 console.log("content.js: pageStatus: ",pageStatus);
 // NOTE: trying to send any DOM references here will cause bad things to happen!
-chrome.runtime.sendMessage( pageStatus );
+browser.runtime.sendMessage( pageStatus );
 
 if( pageStatus.warnings.length>0) {
     showWarnings(pageStatus.warnings);
