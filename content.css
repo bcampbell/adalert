@@ -9,7 +9,12 @@
     width: 200px;
     height: 100px;
     border: 2px solid white;
-    padding: 8px;
     box-shadow: 8px 8px 8px rgba(0,0,0,0.1);
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+    padding: 8px;
+    box-sizing: content-box;
+    font-family: sans-serif;
 }
 
