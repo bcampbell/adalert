@@ -1,6 +1,27 @@
 "use strict";
 
 let tweetButton = document.getElementById("action-tweet");
+let msgDiv = document.getElementById("msg");
+
+// cheesy little template system, eg:
+//   render( "Hello, {{name}}!", {name:"Bob"})
+function render(tmpl, values) {
+  var regex = /\{\{\s*(.*?)\s*\}\}/gi;
+  return tmpl.replace(regex, function(m,p1) {
+    return values[p1];
+  });
+}
+
+function build(content) {
+    var frag = document.createDocumentFragment();
+    var tmp = document.createElement('div');
+    tmp.innerHTML = content;
+    while (tmp.firstChild) {
+        frag.appendChild(tmp.firstChild);
+    }
+    return frag;
+}
+
 
 function onError(error) {
   console.error(`Error: ${error}`);
@@ -17,21 +38,29 @@ function configPopup( pageStatus) {
 
     let atRefs = pageStatus.twits.join(" ");
 
-    let tweetTxt = [atRefs, "This looks like unmarked #sponsored content"].join(" ");
+    let tweetTxt = null;
+    let popupTxt = null;
+    let tweetButtonTxt = null;
+
+    if (certain.length>0) {
+        popupTxt = "This article is sponsored content";
+        tweetTxt = [atRefs, "This article is #sponsored content"].join(" ");
+        tweetButtonTxt = "Tweet about it";
+    } else if (poss.length>0) {
+        popupTxt = "This page contains text which might indicate sponsored content";
+        tweetTxt = [atRefs, "This page looks like it might be unmarked #sponsored content"].join(" ");
+        tweetButtonTxt = "Tweet about it";
+    } else {
+        popupTxt = "Is this page sponsored content?";
+        tweetTxt = [atRefs, "This article is #sponsored content"].join(" ");
+        tweetButtonTxt = "Tweet about it";
+    }
 
     let tweetURL = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(tweetTxt) +"&url=" + encodeURIComponent(pageStatus.url);
-
     
     tweetButton.href = tweetURL;
-/*
-    if (certain.length > 0) {
-        configCertain(certain, pageStatus);
-    } else if (poss.length > 0) {
-        configPossible(poss, pageStatus);
-    } else {
-        configNone(pageStatus);
-    }
-    */
+    tweetButton.innerHTML = tweetButtonTxt;
+    msgDiv.innerHTML = popupTxt;
 }
 
 

@@ -10,7 +10,8 @@ document.body.style.border = "5px solid red";
  **********************************/
 
 
-// cheesy little template system, eg "Hello, {{name}}!"
+// cheesy little template system, eg:
+//   render( "Hello, {{name}}!", {name:"Bob"})
 function render(tmpl, values) {
   var regex = /\{\{\s*(.*?)\s*\}\}/gi;
   return tmpl.replace(regex, function(m,p1) {
@@ -139,7 +140,7 @@ function scanPage() {
     var hits = searchHTML(document.body, aus);
     if (hits.length>0) {
         warnings.push({kind: 'sponsored',
-            level: 'possible',      // possible/certain
+            level: 'certain',      // possible/certain
             msg: "This article looks like it could contain sponsored content" /*,
             indicators: hits*/ } );
     }
@@ -174,7 +175,7 @@ browser.runtime.onMessage.addListener(request => {
 pageStatus = scanPage();
 console.log("content.js: pageStatus: ",pageStatus);
 // NOTE: trying to send any DOM references here will cause bad things to happen!
-browser.runtime.sendMessage( pageStatus );
+browser.runtime.sendMessage( {'action': "scanned", 'result': pageStatus} );
 
 if( pageStatus.warnings.length>0) {
     showWarnings(pageStatus.warnings);
