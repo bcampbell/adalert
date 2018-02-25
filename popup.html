@@ -9,16 +9,19 @@
 <body>
   <div id="popup-content">
     <div id="msg">Does this page look like sponsored content?</div>
-    <a id="action-tweet" class="btn btn-default" href="#">Tweet about it</a><br/>
-  <div id="warnings">
-  </div>
-  Twits:
-  <div id="twits">
-  </div>
-  </div>
-  <div id="error-content" class="hidden">
-  </div>
+    <br/>
+    <a id="action-tweet" class="btn" href="#">Tweet about it</a>
+    <br/>
+    <br/>
 
+    <div id="error-content" class="hidden"></div>
+  </div>
+  <div class="dbug-container">
+    <input class="vis-toggle" id="show-dbug" type="checkbox" ><label for="show-dbug">show debug info?</label>
+    <pre class="vis" id="dbug">
+    page was not scanned.
+    </pre>
+  </div>
   <script src="popup.js"></script>
 
 </body>

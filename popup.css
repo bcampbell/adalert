@@ -1,32 +1,170 @@
-html, body {
-/*  width: 400px;
-  height: 400px; */
+html {
+  font-size: 16px;
 }
+
+body {
+    line-height: 1.5;
+    color: #444;
+    font-family: sans-serif;
+}
+
+
+pre {
+/*     font-family: 'Inconsolata'; */
+}
+
+
+h1,h2,h3,h4,h5,h6 {
+    color: #222;
+    margin: 0.5rem 0;
+}
+
+h1 { font-size:244%;}
+h2 { font-size:195%;}
+h3 { font-size:156%;}
+h4 { font-size:125%;}
+h5 {font-size:100%; }
+h6 {font-size:80%; }
+
+small, .small { font-size: 65%; }
+
+/* secondary headings */
+h1 small, h1 .small,
+h2 small, h2 .small,
+h3 small, h3 .small,
+h4 small, h4 .small,
+h5 small, h5 .small,
+h6 small, h6 .small {
+    color: #888;
+    font-weight: normal;
+}
+
+p {
+    margin-bottom: 0.75rem;
+}
+
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+img {
+    margin: 0;
+    padding: 0;
+}
+
+
+
+/* forms */
+
+label {
+    /*display: block; */
+}
+
+.checkbox label {
+  display: inline-block;
+  font-weight: normal;
+}
+
+input[type="checkbox"] {
+    margin-left: 0;
+}
+
+
+input,textarea {
+    padding: 0.4em;
+}
+
+input,select { }
+
+
+/* form errors */
+.has-error input,
+.has-error select,
+.has-error textarea {
+  border-color: #b94a48;
+}
+
+.has-error label,
+.has-error .help-block {
+  color: #b94a48;
+}
+
+/* form misc */
+
+.form-group {
+    display: block;
+    margin-bottom: 0.5em;
+}
+
+.form-control {
+    width: 100%;
+}
+
+.help-block {
+    display: block;
+    color: #888;
+    margin-top: 0.2em;
+    margin-bottom: 0.4em;
+}
+
+
+.inline-form input,select {}
+
+
+/* buttons */
+
+.btn {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background-color: transparent;
+  border: 1px solid #888;
+}
+
+.btn-lg {
+  font-size: 115%;
+}
+
+a.btn {
+    color: #000;
+}
+
+a.btn:hover {
+    background-color: #ccc;
+    text-decoration: none;
+}
+
+a.btn:visited {
+    color: #000;
+}
+
+/* END BASE STYLING */
+
+
 
 .is-hidden {
   display: none;
 }
 
-.btn {
-  margin: 3% auto;
-  padding: 4px;
-  text-align: center;
-  font-size: 1.5em;
-  cursor: pointer;
+.vis-toggle ~ .vis {
+    display: none;
 }
 
-.beast:hover {
-  background-color: #CFF2F2;
+.vis-toggle:checked ~ .vis {
+    display: block;
 }
 
-.beast {
-  background-color: #E5F2F2;
-}
 
-.reset {
-  background-color: #FBFBC9;
-}
-
-.reset:hover {
-  background-color: #EAEA9D;
+#popup-content {
+    padding: 0.5rem;
+    text-align: center;
 }

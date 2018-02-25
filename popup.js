@@ -29,8 +29,13 @@ function onError(error) {
 
 
 function configPopup( pageStatus) {
-    document.getElementById("warnings").innerText = pageStatus.warnings.toString();
-    document.getElementById("twits").innerText = pageStatus.twits.toString();
+
+    if(1) {
+        let dbugTxt = "debug - page info:\n\n" + JSON.stringify( pageStatus,null,2 );
+        document.getElementById("dbug").textContent = dbugTxt;
+    }
+
+
     let sponsored = pageStatus.warnings.filter(w => w.kind=='sponsored');
     
     let poss = sponsored.filter(w => w.level=='possible');

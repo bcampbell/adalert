@@ -1,8 +1,10 @@
 "use strict";
 
+
 console.log("content.js: HELLO");
 
-document.body.style.border = "5px solid red";
+var _window = typeof unsafeWindow === 'undefined' ? window : unsafeWindow;
+
 
 
 /**********************************
@@ -116,7 +118,7 @@ function twitFinder() {
     if (m) {
         var txt = m.getAttribute("content");
         if (!txt) {
-            var txt = m.getAttribute("value");
+            txt = m.getAttribute("value");
         }
         if(txt) {
             twits.push(txt);
@@ -127,31 +129,83 @@ function twitFinder() {
     return twits;
 }
 
+function getRuleForPage() {
+  var domain = _window.location.host;
+  domain = domain.replace('www.', '');
+  return _window.AD_DETECTOR_RULES[domain];
+}
+
+
+
+function isDefinitelyNotArticle() {
+    var notArt = false; // assume article by default
+    var m = document.querySelector('meta[property="og:type"]');
+    if (m) {
+        var txt = m.getAttribute("content");
+        if (!txt) {
+            txt = m.getAttribute("value");
+        }
+        if(txt) {
+            if(txt=="website") {
+                notArt = true;
+            }
+        }
+    }
+
+    return notArt;
+}
+
 
 function scanPage() {
-    var pageURL = window.location.href;
+    var pageURL = _window.location.href;
 
     var warnings = [];
+    var notes = "";
+    var twits = [];
 
     var indicators = ["scientists have", "scientists say",  "paper published", "research suggests", "latest research", "researchers", "the study"]
 
     var aus = ["australian", "australia", "aussie"];
 
-    var hits = searchHTML(document.body, aus);
-    if (hits.length>0) {
-        warnings.push({kind: 'sponsored',
-            level: 'certain',      // possible/certain
-            msg: "This article looks like it could contain sponsored content" /*,
-            indicators: hits*/ } );
+    if (isDefinitelyNotArticle()) {
+        notes = "not an article, so not checked";
+    } else {
+        var hits = searchHTML(document.body, aus);
+        if (hits.length>0) {
+            warnings.push({kind: 'sponsored',
+                level: 'possible',      // possible/certain
+                msg: "This article looks like it could contain sponsored content" /*,
+                indicators: hits*/ } );
+        }
+
+        console.log("content.js: checking rules...");
+        let rules = getRuleForPage();
+        if( rules ) {
+            console.log("content.js: applying rules", rules);
+            for (var i=0; i<rules.length; i++) {
+                var rule = rules[i];
+                if (rule.match()) {
+                    warnings.push({kind: 'sponsored',
+                        level: 'certain',      // possible/certain
+                        msg: "This contains sponsored content"
+                    });
+                    break;
+                }
+            }
+        } else {
+            console.log("content.js: no rules to apply");
+        }
+
+        twits = twitFinder();
     }
 
     // TODO: check white-list
 
-    var twits = twitFinder();
     return {
         'url': pageURL,
         'warnings': warnings,
-        'twits': twits
+        'twits': twits,
+        'notes': notes
     };
 
 }

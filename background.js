@@ -9,10 +9,9 @@ chrome.runtime.onMessage.addListener(
         if ( request.action== "scanned") {
             let pageStatus = request.result;
             let n = pageStatus.warnings.length;
-            if (n<0) {
-                return;
+            if (n>0) {
+                var badgeTxt = n.toString();
+                chrome.browserAction.setBadgeText({text: badgeTxt, tabId: sender.tab.id});
             }
-            var badgeTxt = n.toString();
-            chrome.browserAction.setBadgeText({text: badgeTxt, tabId: sender.tab.id});
         }
     });
