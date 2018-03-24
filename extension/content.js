@@ -146,7 +146,7 @@ function isDefinitelyNotArticle() {
             txt = m.getAttribute("value");
         }
         if(txt) {
-            if(txt=="website") {
+            if(txt=="website" || txt=="homepage") {
                 notArt = true;
             }
         }
