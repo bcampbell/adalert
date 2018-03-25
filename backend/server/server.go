@@ -3,10 +3,14 @@ package server
 import (
 	"context"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
+	//	"strings"
+	"encoding/json"
 	"time"
 )
 
@@ -26,6 +30,12 @@ func Run() error {
 	router := http.NewServeMux()
 	router.HandleFunc("/api/lookup/", func(w http.ResponseWriter, req *http.Request) {
 		srv.lookupHandler(w, req)
+	})
+	router.HandleFunc("/api/report/", func(w http.ResponseWriter, req *http.Request) {
+		srv.reportHandler(w, req)
+	})
+	router.HandleFunc("/browse", func(w http.ResponseWriter, req *http.Request) {
+		srv.browseHandler(w, req)
 	})
 
 	s := &http.Server{
@@ -75,16 +85,115 @@ func (srv *Server) Close() {
 	srv.store.Close()
 }
 
+func (src *Server) Emit500(w http.ResponseWriter, req *http.Request, err error) {
+	msg := fmt.Sprintf("500 Internal Server Error\n\n(%s)\n", err)
+	http.Error(w, msg, http.StatusInternalServerError)
+	fmt.Fprintf(os.Stderr, "ERR: %s\n", err)
+}
+
 func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 
 	q := req.URL.Query()
 	u := q.Get("u")
+	h := q.Get("h")
 
-	inf, err := srv.store.InfoForURL(u)
+	fmt.Printf("Lookup: %s\n", u)
+
+	if h == "" && u != "" {
+		h = HashURL(u)
+	}
+
+	inf, err := srv.store.PageInfoByHash(h)
 	if err != nil {
-		fmt.Fprintf(w, "UHOH... %s\n", err)
+		srv.Emit500(w, req, err)
+		return
+	}
+	if inf == nil {
+		http.NotFound(w, req)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	enc := json.NewEncoder(w)
+	err = enc.Encode(inf)
+	if err != nil {
+		srv.Emit500(w, req, err)
+		return
+	}
+}
+
+func (srv *Server) reportHandler(w http.ResponseWriter, req *http.Request) {
+
+	q := req.URL.Query()
+	u := q.Get("u")
+	title := q.Get("title")
+
+	err := srv.store.Report([]string{u}, title, "sponsored", 1)
+	if err != nil {
+		srv.Emit500(w, req, err)
+		return
+	}
+	// TODO: return updated pageinfo
+}
+
+func (srv *Server) browseHandler(w http.ResponseWriter, req *http.Request) {
+	q := req.URL.Query()
+	offset, err := strconv.Atoi(q.Get("o"))
+
+	limit := 100
+	pages, err := srv.store.Query(limit, offset)
+	if err != nil {
+		srv.Emit500(w, req, err)
+		return
+	}
+	/*
+		const (
+			master  = `Names:{{block "list" .}}{{"\n"}}{{range .}}{{println "-" .}}{{end}}{{end}}`
+			overlay = `{{define "list"}} {{join . ", "}}{{end}} `
+		)
+		var (
+			funcs     = template.FuncMap{"join": strings.Join}
+			guardians = []string{"Gamora", "Groot", "Nebula", "Rocket", "Star-Lord"}
+		)
+	*/
+
+	tmplTxt := `<!DOCTYPE html>
+<html>
+  <body>
+    <table>
+      <thead>
+	    <tr>
+          <th>Title</th>
+          <th>URL</th>
+          <th>Added</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .pages }}
+        <tr>
+          <td>{{.Title}}</td>
+          <td><a href="{{.CanonicalURL}}">{{.CanonicalURL}}</a></td>
+          <td>{{.Created}}</td>
+        </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  </body>
+</html>
+`
+
+	dat := map[string]interface{}{
+		"pages": pages,
+	}
+
+	tmpl, err := template.New("").Parse(tmplTxt)
+	if err != nil {
+		srv.Emit500(w, req, err)
+		return
+	}
+	err = tmpl.Execute(w, dat)
+	if err != nil {
+		srv.Emit500(w, req, err)
 		return
 	}
 
-	fmt.Fprintf(w, "result: %v\n", inf)
 }

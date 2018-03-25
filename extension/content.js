@@ -159,6 +159,15 @@ function isDefinitelyNotArticle() {
 function scanPage() {
     var pageURL = _window.location.href;
 
+
+    console.log("content.js: kick off lookup");
+    let p = browser.runtime.sendMessage( {'action': "lookup", 'url': pageURL} );
+    p.then(function(response) {
+        console.log("LOOKUP RESULT: ", response);
+    })
+
+
+
     var warnings = [];
     var notes = "";
     var twits = [];
