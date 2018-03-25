@@ -1,6 +1,7 @@
 "use strict";
 
 let tweetButton = document.getElementById("action-tweet");
+let reportButton = document.getElementById("action-report");
 let msgDiv = document.getElementById("msg");
 
 // cheesy little template system, eg:
@@ -91,7 +92,6 @@ browser.tabs.query({
 //});
 
 tweetButton.addEventListener("click", function( event ) {
-    console.log("wibble");
     event.preventDefault();
     let c = browser.tabs.create({
         url: tweetButton.href,
@@ -100,5 +100,24 @@ tweetButton.addEventListener("click", function( event ) {
     c.then( function() {
        window.close();
     });
+}, false);
+
+reportButton.addEventListener("click", function( event ) {
+    event.preventDefault();
+
+    browser.tabs.query({
+        currentWindow: true,
+        active: true
+    }).then( function(tabs) {
+        for (let tab of tabs) {
+            console.log("report:", tab.url, tab.title);
+            let s = chrome.runtime.sendMessage({action: "report", u:tab.url, t:tab.title});
+            s.then(response => {
+                console.log("popup.js: response from background.js: ", response);
+              }).catch(function() { console.log("Poop.")});
+        }
+    }).catch(onError);
+
+
 }, false);
 

@@ -1,6 +1,6 @@
 "use strict";
 
-var serverURL = "http://localhost:5000";
+var serverURL = "http://192.168.1.50:4000";
 
 
 console.log("background.js: HELLO");
@@ -42,6 +42,36 @@ chrome.runtime.onMessage.addListener(
             console.log("Start lookup:", u);
             req.open("GET", u);
             req.send();
+            return true;    // keep channel until we call sendResponse()
+        }
+
+        // post a warning on a page
+        if (request.action=="report") {
+            let pageURL = request.url;
+            let title = request.title;
+
+            console.log("background.js report:",pageURL,title);
+
+            let req = new XMLHttpRequest();
+            req.addEventListener("load", function() {
+                if (this.status==200) {
+                    sendResponse({"success":true});
+                } else {
+                    sendResponse({"success":false, "reason": "http " + this.status });
+                }
+            });
+            req.addEventListener("error", function() {
+                //console.log("ERR", req);
+                sendResponse({"success":false, "reason": "req failed" })
+            });
+            let u = serverURL + "/api/report";
+            req.open("POST", u);
+            let data = new FormData();
+            data.append('u', pageURL);
+            data.append('t', title);
+
+            req.send(data);
+            console.log(req);
             return true;    // keep channel until we call sendResponse()
         }
 

@@ -19,7 +19,7 @@ type Server struct {
 }
 
 func Run() error {
-	listenAddr := ":5000"
+	listenAddr := ":4000"
 
 	srv, err := newServer()
 	if err != nil {
@@ -108,11 +108,11 @@ func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 		srv.Emit500(w, req, err)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	if inf == nil {
-		http.NotFound(w, req)
+		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	enc := json.NewEncoder(w)
 	err = enc.Encode(inf)
 	if err != nil {
@@ -123,9 +123,11 @@ func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 
 func (srv *Server) reportHandler(w http.ResponseWriter, req *http.Request) {
 
-	q := req.URL.Query()
+	q := &req.Form
 	u := q.Get("u")
-	title := q.Get("title")
+	title := q.Get("t")
+
+	fmt.Printf("report: %s %s\n", u, title)
 
 	err := srv.store.Report([]string{u}, title, "sponsored", 1)
 	if err != nil {
