@@ -11,8 +11,8 @@
 
 
   "permissions": [
-    "*://192.168.1.50/*",
-    "activeTab",
+    "*://oddie.scumways.com/*",
+    "*://localhost/*",
     "tabs"
   ],
 

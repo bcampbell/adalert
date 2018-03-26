@@ -111,7 +111,7 @@ reportButton.addEventListener("click", function( event ) {
     }).then( function(tabs) {
         for (let tab of tabs) {
             console.log("report:", tab.url, tab.title);
-            let s = chrome.runtime.sendMessage({action: "report", u:tab.url, t:tab.title});
+            let s = chrome.runtime.sendMessage({action: "report", url: tab.url, title: tab.title});
             s.then(response => {
                 console.log("popup.js: response from background.js: ", response);
               }).catch(function() { console.log("Poop.")});

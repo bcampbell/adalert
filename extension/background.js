@@ -1,6 +1,7 @@
 "use strict";
 
-var serverURL = "http://192.168.1.50:4000";
+//var serverURL = "http://oddie.scumways.com:4000";
+var serverURL = "http://localhost:4000";
 
 
 console.log("background.js: HELLO");

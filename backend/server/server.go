@@ -28,10 +28,10 @@ func Run() error {
 	defer srv.Close()
 
 	router := http.NewServeMux()
-	router.HandleFunc("/api/lookup/", func(w http.ResponseWriter, req *http.Request) {
+	router.HandleFunc("/api/lookup", func(w http.ResponseWriter, req *http.Request) {
 		srv.lookupHandler(w, req)
 	})
-	router.HandleFunc("/api/report/", func(w http.ResponseWriter, req *http.Request) {
+	router.HandleFunc("/api/report", func(w http.ResponseWriter, req *http.Request) {
 		srv.reportHandler(w, req)
 	})
 	router.HandleFunc("/browse", func(w http.ResponseWriter, req *http.Request) {
@@ -123,9 +123,8 @@ func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 
 func (srv *Server) reportHandler(w http.ResponseWriter, req *http.Request) {
 
-	q := &req.Form
-	u := q.Get("u")
-	title := q.Get("t")
+	u := req.FormValue("u")
+	title := req.FormValue("t")
 
 	fmt.Printf("report: %s %s\n", u, title)
 
