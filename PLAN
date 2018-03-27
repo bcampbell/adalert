@@ -1,0 +1,41 @@
+rough plan:
+
+- As you browse, the extension will ask the server about each page.
+
+- any returned 'sponsored content' flags (and later, other warning
+labels, links, sources, comments etc) from the server will be popped up
+in the browser.
+
+- You can click on the extensions button and pick "report this page" if
+you think a page is sponsored content.
+
+- If a page has been reported, there'll be options to agree/disagree
+with the report.
+
+- Contentious pages will be marked as such (eg "25 people think this is
+sponsored content, but 14 do not")
+
+- When the extension checks pages against the server, only a hash of the
+URL will be sent, so the server can never track what pages you're
+looking at unless there are they've been flagged.
+
+- There'll be a whitelist of sites which are to be checked (preloaded
+with news sites, but the user can add and remove sites themselves)
+
+- there'll probably be an option to also check pages which have obvious
+article markup, even if they're not on a whitelisted site.
+
+- when a page is reported, the full URL does need to be sent to the
+server, not just a hash.
+
+- reporting is frictionless - you don't need to log in or anything
+
+- there'll be a simple mechanism to stop people reporting pages multiple
+times (but it won't be fullproof. If abuse happens, we move to full user
+accounts)
+
+- I wasn't planning to have a human-facing web site to start with. But
+thinking about it as I type: it'd be good to have a simple site to just
+browse through articles which have been reported (and to make that data
+available to others). Very handy for testing.
+
