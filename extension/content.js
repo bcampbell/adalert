@@ -156,38 +156,70 @@ function isDefinitelyNotArticle() {
 }
 
 
-function scanPage() {
+function isDefinitelyArticle() {
+    var m = document.querySelector('meta[property="og:type"]');
+    if (m) {
+        var txt = m.getAttribute("content");
+        if (!txt) {
+            txt = m.getAttribute("value");
+        }
+        if(txt) {
+            if(txt=="article") {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+
+function scanPage(showResults) {
     var pageURL = _window.location.href;
+    console.log("scanning " + pageURL);
+
+    var twits = twitFinder();
+
+    if(isDefinitelyNotArticle()) {
+        showResults({
+            'url': pageURL,
+            'warnings': [],
+            'twits': twits,
+            'checked': false,
+            'notes': "not an article, so not checked"
+        });
+        return;
+    }
 
 
-    console.log("content.js: kick off lookup");
-    let p = browser.runtime.sendMessage( {'action': "lookup", 'url': pageURL} );
-    p.then(function(response) {
-        console.log("LOOKUP RESULT: ", response);
-    })
+    // TODO: whitelist for server lookup
 
+    let promises = [];
 
+    if(isDefinitelyArticle()) {
+        console.log("content.js: Article page, so ask server");
+        let p = browser.runtime.sendMessage( {'action': "lookup", 'url': pageURL} );
+        promises.push(p);
+    }
 
-    var warnings = [];
-    var notes = "";
-    var twits = [];
-
-    var indicators = ["scientists have", "scientists say",  "paper published", "research suggests", "latest research", "researchers", "the study"]
-
-    var aus = ["australian", "australia", "aussie"];
-
-    if (isDefinitelyNotArticle()) {
-        notes = "not an article, so not checked";
-    } else {
-        var hits = searchHTML(document.body, aus);
+    // do keyword search of page...
+    let keywordSearch = new Promise(function(resolve, reject) {
+        let indicators = ["sponsored"];
+        let hits = searchHTML(document.body, indicators);
+        let warnings = [];
         if (hits.length>0) {
             warnings.push({kind: 'sponsored',
                 level: 'possible',      // possible/certain
-                msg: "This article looks like it could contain sponsored content" /*,
-                indicators: hits*/ } );
+                msg: "This article contains words which might indicate sponsored content..."
+            });
         }
+        resolve(warnings);
+    });
+    promises.push(keywordSearch);
 
+    let ruleSearch = new Promise(function(resolve,reject) {
         console.log("content.js: checking rules...");
+        let warnings = [];
         let rules = getRuleForPage();
         if( rules ) {
             console.log("content.js: applying rules", rules);
@@ -201,21 +233,29 @@ function scanPage() {
                     break;
                 }
             }
-        } else {
-            console.log("content.js: no rules to apply");
+        }
+        resolve(warnings);
+    });
+    promises.push(ruleSearch);
+
+
+    Promise.all(promises).then(function(v) {
+
+        let warnings = [];
+        for( let i=0; i<v.length; i++ ) {
+            warnings = warnings.concat(v[i]);
         }
 
-        twits = twitFinder();
-    }
-
-    // TODO: check white-list
-
-    return {
-        'url': pageURL,
-        'warnings': warnings,
-        'twits': twits,
-        'notes': notes
-    };
+        showResults({
+            'url': pageURL,
+            'warnings': warnings,
+            'twits': twits,
+            'notes': "scanned."
+        });
+        return;
+    }).catch( function(reason) {
+        console.log("SCAN FAILED: " + reason);
+    });
 
 }
 
@@ -235,16 +275,19 @@ browser.runtime.onMessage.addListener(request => {
 });
 
 
-pageStatus = scanPage();
-console.log("content.js: pageStatus: ",pageStatus);
-// NOTE: trying to send any DOM references here will cause bad things to happen!
-browser.runtime.sendMessage( {'action': "scanned", 'result': pageStatus} );
+scanPage(function(inf){
+    pageStatus = inf;
+    
+    console.log("content.js: pageStatus: ",pageStatus);
+    // NOTE: trying to send any DOM references here will cause bad things to happen!
+    browser.runtime.sendMessage( {'action': "scanned", 'result': pageStatus} );
 
-if( pageStatus.warnings.length>0) {
-    showWarnings(pageStatus.warnings);
-}
+    if( pageStatus.warnings.length>0) {
+        showWarnings(pageStatus.warnings);
+    }
 
-console.log("content.js: pageStatus2: ",pageStatus);
+    console.log("content.js: pageStatus2: ",pageStatus);
+});
 
 
 // <meta name="twitter:site" value="@WashingtonPost"/>

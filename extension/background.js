@@ -1,7 +1,7 @@
 "use strict";
 
-//var serverURL = "http://oddie.scumways.com:4000";
-var serverURL = "http://localhost:4000";
+var serverURL = "http://oddie.scumways.com:4000";
+//var serverURL = "http://localhost:4000";
 
 
 console.log("background.js: HELLO");
@@ -14,8 +14,11 @@ chrome.runtime.onMessage.addListener(
             let pageStatus = request.result;
             let n = pageStatus.warnings.length;
             if (n>0) {
+                console.log("BADGERTIME: " + n);
                 var badgeTxt = n.toString();
                 chrome.browserAction.setBadgeText({text: badgeTxt, tabId: sender.tab.id});
+            } else {
+                chrome.browserAction.setBadgeText({text: "", tabId: sender.tab.id});
             }
         }
 
@@ -25,18 +28,25 @@ chrome.runtime.onMessage.addListener(
 
             let req = new XMLHttpRequest();
             req.addEventListener("load", function() {
+                let warnings = [];
                 console.log("loaded", req);
                 console.log(this.responseText);
                 if (this.status==200) {
-                    let inf = JSON.parse(this.responseText);
-                    sendResponse({"success":true, "info": inf});
-                } else {
-                    sendResponse({"success":false, "reason": "http " + this.status });
+                    if( this.responseText) {
+                        let inf = JSON.parse(this.responseText);
+                        warnings.push({'kind':'sponsored',
+                            'level':'certain',
+                            'msg': "Flagged as sponsored content (by " + inf.warns + " people)"
+                        });
+                    }
+                    //sendResponse({"success":true, "info": inf});
                 }
+                sendResponse(warnings);
             });
             req.addEventListener("error", function() {
                 //console.log("ERR", req);
-                sendResponse({"success":false, "reason": "req failed" })
+                //sendResponse({"success":false, "reason": "req failed" })
+                sendResponse([]);
             });
             // TODO: hash url for sending
             let u = serverURL + "/api/lookup?u=" + encodeURIComponent(pageURL) 
