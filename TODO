@@ -6,4 +6,4 @@ popup results
 manual check button for popup
 dispute flags
 handle displaying multiple warnings (just pick one?)
-
+only send hashed urls for lookups
