@@ -2,8 +2,12 @@ update per-site rules to cover new examples
 add a site whitelist (force lookup of pages on those sites)
 chrome version
 chrome store
-popup results
+popup results - show warnings there too
 manual check button for popup
-dispute flags
+add feature to dispute flags
 handle displaying multiple warnings (just pick one?)
 only send hashed urls for lookups
+rename project
+update labels after flagging
+less intrusive labels
+cookie to prevent double-voting

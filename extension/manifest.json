@@ -17,13 +17,13 @@
   ],
 
     "background": {
-      "scripts": ["background.js"]
+      "scripts": ["browser-polyfill.js","background.js"]
     },
 
   "content_scripts": [
     {
       "matches": ["*://*/*"],
-      "js": ["rules.js", "content.js"],
+      "js": ["browser-polyfill.js","rules.js","content.js"],
       "css": ["content.css"]
     }
   ],
