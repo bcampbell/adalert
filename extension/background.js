@@ -42,7 +42,7 @@ function hitServer(pageURL) {
                     });
                 }
             }
-            resolve({ 'hitServer': true, 'warnings': warnings });
+            resolve(warnings);
         });
         req.addEventListener("error", function() {
             reject("request failed", req);
@@ -130,35 +130,13 @@ let cachedOpts = null;
 let cookedWhitelist = null;
 
 
-// policy helper - should we hit the server for this page?
-// (assume cachedOpts and cookedWhitelist up-to-date)
-function shouldHitServer(domain, artScore) {
-    if(cookedWhitelist[domain] === true ) {
-        return true;
-    }
-    if( cachedOpts.checkarts && artScore >0 ) {
-        return true;
-    }
-    return false;
-}
 
-
-
-
-function handleCheckPage(pageURL,artScore) {
+function handleIsWhitelisted(pageURL) {
     let domain = parseURL(pageURL).host;
     domain = normaliseDomain(domain);
 
-    getOpts().then( function() {
-        if(shouldHitServer(domain,artScore) ) {
-            return hitServer(pageURL);
-        }
-        // don't hit server
-        return Promise.resolve({
-            'hitServer': false,
-            'warnings': []
-        });
-    });
+    let chk = (cookedWhitelist[domain] === true );
+    return Promise.resolve(chk);
 }
 
 
@@ -187,7 +165,7 @@ function getOpts() {
             cachedOpts = opts;
             // defaults:
             if(opts.whitelist===undefined) {
-                opts.whitelist = [];
+                opts.whitelist = ["scumways.com","foo.net"];
             }
             if(opts.checkarts===undefined) {
                 opts.checkarts = true;
@@ -207,7 +185,8 @@ browser.runtime.onMessage.addListener(
         console.log("background.js: got ", req);
         switch (req.action) {
             case "scanned": return handleScanned(sender, req.result);
-            case "checkpage": return handleCheckPage(req.url, req.artscore);
+            case "iswhitelisted": return handleIsWhitelisted(req.url);
+            case "lookuppage": return hitServer(req.url);
             case "report": return handleReport(req.url, req.title );
             case "getopts": return getOpts();
             case "setopts": return setOpts(req.opts);

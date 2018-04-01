@@ -200,23 +200,58 @@ function doCheckRules() {
 }
 
 
-function scanPage() {
+function checkPage(force) {
+    if (force===undefined) {
+        force = false;
+    }
     var pageURL = _window.location.href;
     console.log("scanning " + pageURL);
 
-    let artScore = calcArtScore();
+    return browser.runtime.sendMessage( {'action': "getopts"} ).then(function(opts) {
+        return browser.runtime.sendMessage( {'action':"iswhitelisted", 'url': pageURL} ).then(function(isWhitelisted) {
 
-    let pserv = browser.runtime.sendMessage( {'action': "checkpage", 'url': pageURL, 'artScore': artScore} );
-    let prules = doCheckRules();
-    let pcontent = doCheckContent();
+            let artScore = null;
+            if(isWhitelisted || opts.checkarts || force) {
+                artScore = calcArtScore();
+            }
+            let twits = twitFinder();
 
-    return Promise.all([pserv,prules,pcontent]).then( function(results) {
-        let out = results[0];
-        out.url = pageURL;
-        out.twits = twits;
-        out.warnings = out.warnings.concat(results[1]);
-        out.warnings = out.warnings.concat(results[2]);
-        return Promise.resolve(out);
+            // all the conditions under which we scan the page
+            let scan = (isWhitelisted || force || (opts.checkarts && artScore>0) );
+
+            if( !scan ) {
+                return Promise.resolve({
+                    'url' : pageURL,
+                    'isWhitelisted': isWhitelisted,
+                    'artScore': artScore,
+                    'hitServer': false,
+                    'twits': twits,
+                    'warnings': []
+                });
+            }
+
+
+            let pserv = browser.runtime.sendMessage( {'action': "lookuppage", 'url': pageURL} );
+            let prules = doCheckRules();
+            let pcontent = doCheckContent();
+
+            return Promise.all([pserv,prules,pcontent]).then( function(results) {
+                console.log("content.js: scan complete:",results);
+                let w = [];
+                w = w.concat(results[0]);
+                w = w.concat(results[1]);
+                w = w.concat(results[2]);
+
+                let out = {
+                    'url': pageURL,
+                    'isWhitelisted': isWhitelisted,
+                    'hitServer': true,
+                    'artScore': artScore,
+                    'twits': twits,
+                    'warnings': w };
+                return Promise.resolve(out);
+            });
+        });
     });
 }
 
@@ -236,7 +271,9 @@ browser.runtime.onMessage.addListener(request => {
 });
 
 
-scanPage().then(function(pageStatus){
+checkPage().then(function(results){
+    pageStatus = results;
+    console.log("Scan complete: ", pageStatus);
     browser.runtime.sendMessage( {'action': "scanned", 'result': pageStatus} );
     if( pageStatus.warnings.length>0) {
         showWarnings(pageStatus.warnings);

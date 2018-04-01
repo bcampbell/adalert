@@ -1,7 +1,10 @@
 function saveOptions(e) {
     e.preventDefault();
+    let raw = document.querySelector("#whitelist").value;
+    let wl = raw.replace(/\r\n/g,"\n").split("\n");
+
     let opts = {
-        "whitelist": document.querySelector("#whitelist").value,
+        "whitelist": wl,
         "checkarts": document.querySelector("#checkarts").checked
     };
 
@@ -9,14 +12,13 @@ function saveOptions(e) {
 }
 
 function loadOptions() {
-    console.log("load");
-
     var getting = browser.runtime.sendMessage({'action': "getopts"});
     getting.then( function(result) {
             console.log("got ",result);
-            document.querySelector("#whitelist").value = result.whitelist || "";
-            let chkarts = (result.checkarts===undefined) ? true:result.checkarts;
-            document.querySelector("#checkarts").checked = chkarts;
+            let raw =  result.whitelist.join("\n");
+            document.querySelector("#whitelist").value = raw;
+            let chkarts = result.checkarts;
+            document.querySelector("#checkarts").checked = result.checkarts;
         },
         function (err) {
             console.log("loadOptions() failed: " + err );
