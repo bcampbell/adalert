@@ -1,6 +1,5 @@
 update per-site rules to cover new examples
 add a site whitelist (force lookup of pages on those sites)
-chrome version
 chrome store
 popup results - show warnings there too
 manual check button for popup
@@ -11,3 +10,4 @@ rename project
 update labels after flagging
 less intrusive labels
 cookie to prevent double-voting
+server lookup api: should return warning kinds

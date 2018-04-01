@@ -137,8 +137,11 @@ function getRuleForPage() {
 
 
 
-function isDefinitelyNotArticle() {
-    var notArt = false; // assume article by default
+// check page for article-style markup
+// +ve = article, -ve = not article
+// TODO: add schema.org checks
+function calcArtScore() {
+    let score = 0;
     var m = document.querySelector('meta[property="og:type"]');
     if (m) {
         var txt = m.getAttribute("content");
@@ -147,63 +150,20 @@ function isDefinitelyNotArticle() {
         }
         if(txt) {
             if(txt=="website" || txt=="homepage") {
-                notArt = true;
+                score--;
+            } else if(txt=="article") {
+                score++;
             }
         }
     }
 
-    return notArt;
+    return score;
 }
 
 
-function isDefinitelyArticle() {
-    var m = document.querySelector('meta[property="og:type"]');
-    if (m) {
-        var txt = m.getAttribute("content");
-        if (!txt) {
-            txt = m.getAttribute("value");
-        }
-        if(txt) {
-            if(txt=="article") {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-
-function scanPage(showResults) {
-    var pageURL = _window.location.href;
-    console.log("scanning " + pageURL);
-
-    var twits = twitFinder();
-
-    if(isDefinitelyNotArticle()) {
-        showResults({
-            'url': pageURL,
-            'warnings': [],
-            'twits': twits,
-            'checked': false,
-            'notes': "not an article, so not checked"
-        });
-        return;
-    }
-
-
-    // TODO: whitelist for server lookup
-
-    let promises = [];
-
-    if(isDefinitelyArticle()) {
-        console.log("content.js: Article page, so ask server");
-        let p = browser.runtime.sendMessage( {'action': "lookup", 'url': pageURL} );
-        promises.push(p);
-    }
-
+function doCheckContent() {
     // do keyword search of page...
-    let keywordSearch = new Promise(function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
         let indicators = ["sponsored"];
         let hits = searchHTML(document.body, indicators);
         let warnings = [];
@@ -215,9 +175,10 @@ function scanPage(showResults) {
         }
         resolve(warnings);
     });
-    promises.push(keywordSearch);
+}
 
-    let ruleSearch = new Promise(function(resolve,reject) {
+function doCheckRules() {
+    return new Promise(function(resolve,reject) {
         console.log("content.js: checking rules...");
         let warnings = [];
         let rules = getRuleForPage();
@@ -236,27 +197,27 @@ function scanPage(showResults) {
         }
         resolve(warnings);
     });
-    promises.push(ruleSearch);
+}
 
 
-    Promise.all(promises).then(function(v) {
+function scanPage() {
+    var pageURL = _window.location.href;
+    console.log("scanning " + pageURL);
 
-        let warnings = [];
-        for( let i=0; i<v.length; i++ ) {
-            warnings = warnings.concat(v[i]);
-        }
+    let artScore = calcArtScore();
 
-        showResults({
-            'url': pageURL,
-            'warnings': warnings,
-            'twits': twits,
-            'notes': "scanned."
-        });
-        return;
-    }).catch( function(reason) {
-        console.log("SCAN FAILED: " + reason);
+    let pserv = browser.runtime.sendMessage( {'action': "checkpage", 'url': pageURL, 'artScore': artScore} );
+    let prules = doCheckRules();
+    let pcontent = doCheckContent();
+
+    return Promise.all([pserv,prules,pcontent]).then( function(results) {
+        let out = results[0];
+        out.url = pageURL;
+        out.twits = twits;
+        out.warnings = out.warnings.concat(results[1]);
+        out.warnings = out.warnings.concat(results[2]);
+        return Promise.resolve(out);
     });
-
 }
 
 
@@ -275,18 +236,11 @@ browser.runtime.onMessage.addListener(request => {
 });
 
 
-scanPage(function(inf){
-    pageStatus = inf;
-    
-    console.log("content.js: pageStatus: ",pageStatus);
-    // NOTE: trying to send any DOM references here will cause bad things to happen!
+scanPage().then(function(pageStatus){
     browser.runtime.sendMessage( {'action': "scanned", 'result': pageStatus} );
-
     if( pageStatus.warnings.length>0) {
         showWarnings(pageStatus.warnings);
     }
-
-    console.log("content.js: pageStatus2: ",pageStatus);
 });
 
 

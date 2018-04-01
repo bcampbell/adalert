@@ -2,6 +2,7 @@
   "manifest_version": 2,
   "name": "oDSponsoredContent",
   "version": "1.0",
+  "author": "Ben Campbell",
 
   "description": "Warns about sponsored content on news articles.",
 
@@ -13,7 +14,7 @@
   "permissions": [
     "*://oddie.scumways.com/*",
     "*://localhost/*",
-    "tabs"
+    "tabs","storage"
   ],
 
     "background": {
@@ -32,5 +33,9 @@
     "default_icon": "icons/border-48.png",
     "default_title": "Sponsored content detector",
     "default_popup": "popup.html"
+  },
+
+  "options_ui": {
+    "page": "options.html"
   }
 }

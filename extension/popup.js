@@ -3,6 +3,7 @@
 let tweetButton = document.getElementById("action-tweet");
 let reportButton = document.getElementById("action-report");
 let msgDiv = document.getElementById("msg");
+let settingsButton = document.getElementById("settings");
 
 // cheesy little template system, eg:
 //   render( "Hello, {{name}}!", {name:"Bob"})
@@ -118,5 +119,10 @@ reportButton.addEventListener("click", function( event ) {
     }).catch(onError);
 
 
+}, false);
+
+settingsButton.addEventListener("click", function( event ) {
+    event.preventDefault();
+    browser.runtime.openOptionsPage();
 }, false);
 

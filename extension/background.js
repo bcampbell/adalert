@@ -7,7 +7,9 @@ var serverURL = "http://oddie.scumways.com:4000";
 console.log("background.js: HELLO");
 
 
-// content page has completed its scan
+
+
+// content page has completed its scan - update popup
 function handleScanned(sender, pageStatus) {
     let n = pageStatus.warnings.length;
     if (n>0) {
@@ -21,9 +23,7 @@ function handleScanned(sender, pageStatus) {
 }
 
 // perform a lookup of the given url on the server
-function handleLookup(sender, pageURL) {
-    //console.log("LOOKUP:", request, sender, sendResponse);
-
+function hitServer(pageURL) {
     return new Promise(function(resolve, reject) {
         let req = new XMLHttpRequest();
         req.addEventListener("load", function() {
@@ -35,11 +35,14 @@ function handleLookup(sender, pageURL) {
                     let inf = JSON.parse(this.responseText);
                     warnings.push({'kind':'sponsored',
                         'level':'certain',
-                        'msg': "Flagged as sponsored content (by " + inf.warns + " people)"
+                        // TODO: localisation
+                        'msg': "Flagged as sponsored content (by " + inf.warns + " people)",
+                        'for': inf.warns,
+                        'against': 0    //inf.against
                     });
                 }
             }
-            resolve(warnings);
+            resolve({ 'hitServer': true, 'warnings': warnings });
         });
         req.addEventListener("error", function() {
             reject("request failed", req);
@@ -55,7 +58,7 @@ function handleLookup(sender, pageURL) {
 
 
 // report a page as sponsored content
-function handleReport(sender, pageURL, title) {
+function handleReport(pageURL, title) {
 
     console.log("background.js report:",pageURL,title);
 
@@ -81,14 +84,133 @@ function handleReport(sender, pageURL, title) {
 }
 
 
+
+function escapeRegExp(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
+function parseURL(url) {
+    var pattern = RegExp("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
+    var matches =  url.match(pattern);
+    return {
+        scheme: matches[2],
+        host: matches[4],
+        path: matches[5],
+        query: matches[7],
+        fragment: matches[9]
+    };
+}
+
+
+// WWW.FOO.com  =>  foo.com
+function normaliseDomain(d) {
+    d = d.toLowerCase();
+    if (d.startsWith("www.")) {
+        d = d.substr(4);
+    }
+    return d;
+}
+    
+
+
+
+// build a lookup table for the whitelist sites
+function cookWhitelist(wl) {
+    let cooked = {};
+    console.log("Cooking whitelist: ",wl);
+    wl.forEach( function(domain) {
+        domain = normaliseDomain(domain);
+        cooked[domain] = true;
+    });
+    return cooked;
+}
+
+
+let cachedOpts = null;
+let cookedWhitelist = null;
+
+
+// policy helper - should we hit the server for this page?
+// (assume cachedOpts and cookedWhitelist up-to-date)
+function shouldHitServer(domain, artScore) {
+    if(cookedWhitelist[domain] === true ) {
+        return true;
+    }
+    if( cachedOpts.checkarts && artScore >0 ) {
+        return true;
+    }
+    return false;
+}
+
+
+
+
+function handleCheckPage(pageURL,artScore) {
+    let domain = parseURL(pageURL).host;
+    domain = normaliseDomain(domain);
+
+    getOpts().then( function() {
+        if(shouldHitServer(domain,artScore) ) {
+            return hitServer(pageURL);
+        }
+        // don't hit server
+        return Promise.resolve({
+            'hitServer': false,
+            'warnings': []
+        });
+    });
+}
+
+
+// set new options
+// returns a promise
+function setOpts(newOpts) {
+    console.log("saving ",newOpts);
+    // update the cache, then save to storage
+    cachedOpts = newOpts;
+    cookedWhitelist = cookWhitelist(newOpts.whitelist);
+    return browser.storage.local.set(newOpts); // returns a promise
+}
+
+
+// fetches the options, ensuring cachedOpts and
+// cookedWhitelist are up-to-date.
+// returns a promise, yielding the options.
+function getOpts() {
+    if (cachedOpts!==null) {
+        // Easy. Already resident.
+        return Promise.resolve(cachedOpts);
+    }
+
+    return new Promise(function(resolve,reject) {
+        browser.storage.local.get().then( function(opts) {
+            cachedOpts = opts;
+            // defaults:
+            if(opts.whitelist===undefined) {
+                opts.whitelist = [];
+            }
+            if(opts.checkarts===undefined) {
+                opts.checkarts = true;
+            }
+
+            cookedWhitelist = cookWhitelist(opts.whitelist);
+            resolve(cachedOpts);
+        }, reject );
+    });
+}
+
+
+
 // handle message from the content script
 browser.runtime.onMessage.addListener(
-    function(request, sender) {
-        console.log("background.js: got ", request);
-        switch (request.action) {
-            case "scanned": return handleScanned(sender, request.result);
-            case "lookup": return handleLookup(sender, request.url);
-            case "report": return handleReport(sender, request.url, request.title );
+    function(req, sender) {
+        console.log("background.js: got ", req);
+        switch (req.action) {
+            case "scanned": return handleScanned(sender, req.result);
+            case "checkpage": return handleCheckPage(req.url, req.artscore);
+            case "report": return handleReport(req.url, req.title );
+            case "getopts": return getOpts();
+            case "setopts": return setOpts(req.opts);
         }
         return Promise.reject("bad action");
     }
