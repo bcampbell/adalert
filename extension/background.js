@@ -34,7 +34,7 @@ function hitServer(pageURL) {
                 if( this.responseText) {
                     let inf = JSON.parse(this.responseText);
                     warnings.push({'kind':'sponsored',
-                        'level':'certain',
+                        'confidence':1,
                         // TODO: localisation
                         'msg': "Flagged as sponsored content (by " + inf.warns + " people)",
                         'for': inf.warns,
@@ -83,34 +83,6 @@ function handleReport(pageURL, title) {
     });
 }
 
-
-
-function escapeRegExp(str) {
-  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-}
-
-function parseURL(url) {
-    var pattern = RegExp("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
-    var matches =  url.match(pattern);
-    return {
-        scheme: matches[2],
-        host: matches[4],
-        path: matches[5],
-        query: matches[7],
-        fragment: matches[9]
-    };
-}
-
-
-// WWW.FOO.com  =>  foo.com
-function normaliseDomain(d) {
-    d = d.toLowerCase();
-    if (d.startsWith("www.")) {
-        d = d.substr(4);
-    }
-    return d;
-}
-    
 
 
 

@@ -169,7 +169,7 @@ function doCheckContent() {
         let warnings = [];
         if (hits.length>0) {
             warnings.push({kind: 'sponsored',
-                level: 'possible',      // possible/certain
+                confidence: 0.3,
                 msg: "This article contains words which might indicate sponsored content..."
             });
         }
@@ -188,7 +188,7 @@ function doCheckRules() {
                 var rule = rules[i];
                 if (rule.match()) {
                     warnings.push({kind: 'sponsored',
-                        level: 'certain',      // possible/certain
+                        confidence: 1,
                         msg: "This contains sponsored content"
                     });
                     break;

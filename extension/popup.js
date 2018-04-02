@@ -5,24 +5,7 @@ let reportButton = document.getElementById("action-report");
 let msgDiv = document.getElementById("msg");
 let settingsButton = document.getElementById("settings");
 
-// cheesy little template system, eg:
-//   render( "Hello, {{name}}!", {name:"Bob"})
-function render(tmpl, values) {
-  var regex = /\{\{\s*(.*?)\s*\}\}/gi;
-  return tmpl.replace(regex, function(m,p1) {
-    return values[p1];
-  });
-}
 
-function build(content) {
-    var frag = document.createDocumentFragment();
-    var tmp = document.createElement('div');
-    tmp.innerHTML = content;
-    while (tmp.firstChild) {
-        frag.appendChild(tmp.firstChild);
-    }
-    return frag;
-}
 
 
 function onError(error) {
@@ -30,7 +13,7 @@ function onError(error) {
 }
 
 
-function configPopup( pageStatus) {
+function OLDconfigPopup( pageStatus) {
 
     if(1) {
         let dbugTxt = "debug - page info:\n\n" + JSON.stringify( pageStatus,null,2 );
@@ -72,6 +55,89 @@ function configPopup( pageStatus) {
 
 
 
+function configPopup(tab, pageStatus) {
+    console.log("configPopup():" ,tab, pageStatus);
+
+    let main = document.getElementById("popup-content");
+    // clear anything existing
+    while (main.hasChildNodes()) {
+        main.removeChild(main.lastChild);
+    }
+
+    if (!pageStatus.hitServer) {
+        addNotScanned(main, tab.url);
+    }
+
+    if (pageStatus.warnings.length > 0) {
+        addWarnings(main, tab.url, pageStatus.warnings);
+    } else {
+        addReportButton(main, tab.url);
+    }
+
+    if (!pageStatus.isWhitelisted) {
+        addAddToWhiteList(main, tab.url);
+    }
+
+    // list any warnings
+    if( pageStatus.warnings.length>0) {
+        addWarnings(main, pageStatus.warnings);
+    }
+
+    let dbugTxt = "debug - page info:\n\n" + JSON.stringify( pageStatus,null,2 );
+    document.getElementById("dbug").textContent = dbugTxt;
+}
+
+
+
+function addNotScanned(container, pageURL) {
+    let tmpl = `This page was not scanned.<br/><a id="action-scan" class="btn" href="">Scan it now</a>`;
+    let frag = buildHTML(tmpl,{});
+    container.append(frag);
+    container.querySelector("#action-scan").addEventListener("click", function( event ) {
+        event.preventDefault();
+        console.log("ACTION-SCAN");
+        // TODO: send 'checkpage' action
+    }, false);
+}
+
+function addAddToWhiteList(container, pageURL) {
+
+    let domain = parseURL(pageURL).host;
+    let tmpl = `<a id="action-whitelist" class="" href="">add {{domain}} to whitelist</a>`;
+    let frag = buildHTML(tmpl,{'domain':domain});
+    container.append(frag);
+    container.querySelector("#action-whitelist").addEventListener("click", function( event ) {
+        event.preventDefault();
+        console.log("ACTION-WHITELIST");
+        // TODO:
+    }, false);
+}
+
+function addReportButton(container, pageURL) {
+
+    let domain = parseURL(pageURL).host;
+    let tmpl = `<p>Think this looks like sponsored content? <a id="action-report" class="btn" href="">Flag it</a><p>`;
+    let frag = buildHTML(tmpl,{'domain':domain});
+    container.append(frag);
+    container.querySelector("#action-report").addEventListener("click", function( event ) {
+        event.preventDefault();
+        console.log("ACTION-REPORT");
+        // TODO:
+    }, false);
+}
+
+
+function addWarnings(container, pageURL, warnings) {
+    let tmpl = `<div>({{conf}}) {{msg}}</div>`;
+
+    for( let i=0; i<warnings.length; i++) {
+        let w = warnings[i];
+        let el = buildHTML(tmpl, {msg: w.msg, conf: w.confidence});
+        container.append(el); 
+    }
+}
+
+
 
 
 
@@ -85,8 +151,8 @@ browser.tabs.query({
             let s = browser.tabs.sendMessage(tab.id, {action: "status"});
             s.then(response => {
                 //console.log("popup.js: response from content.js: ", response);
-                configPopup(response);
-              }).catch(onError);
+                configPopup(tab, response);
+              });
         }
     }).catch(onError);
 //});
