@@ -13,46 +13,6 @@ function onError(error) {
 }
 
 
-function OLDconfigPopup( pageStatus) {
-
-    if(1) {
-        let dbugTxt = "debug - page info:\n\n" + JSON.stringify( pageStatus,null,2 );
-        document.getElementById("dbug").textContent = dbugTxt;
-    }
-
-
-    let sponsored = pageStatus.warnings.filter(w => w.kind=='sponsored');
-    
-    let poss = sponsored.filter(w => w.level=='possible');
-    let certain = sponsored.filter(w => w.level=='certain');
-
-    let atRefs = pageStatus.twits.join(" ");
-
-    let tweetTxt = null;
-    let popupTxt = null;
-    let tweetButtonTxt = null;
-
-    if (certain.length>0) {
-        popupTxt = "This article is sponsored content";
-        tweetTxt = [atRefs, "This article is #sponsored content"].join(" ");
-        tweetButtonTxt = "Tweet about it";
-    } else if (poss.length>0) {
-        popupTxt = "This page contains text which might indicate sponsored content";
-        tweetTxt = [atRefs, "This page looks like it might be unmarked #sponsored content"].join(" ");
-        tweetButtonTxt = "Tweet about it";
-    } else {
-        popupTxt = "Is this page sponsored content?";
-        tweetTxt = [atRefs, "This article is #sponsored content"].join(" ");
-        tweetButtonTxt = "Tweet about it";
-    }
-
-    let tweetURL = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(tweetTxt) +"&url=" + encodeURIComponent(pageStatus.url);
-    
-    tweetButton.href = tweetURL;
-    tweetButton.innerHTML = tweetButtonTxt;
-    msgDiv.innerHTML = popupTxt;
-}
-
 
 
 function configPopup(tab, pageStatus) {
@@ -106,10 +66,20 @@ function addAddToWhiteList(container, pageURL) {
     let tmpl = `<a id="action-whitelist" class="" href="">add {{domain}} to whitelist</a>`;
     let frag = buildHTML(tmpl,{'domain':domain});
     container.append(frag);
-    container.querySelector("#action-whitelist").addEventListener("click", function( event ) {
+    let button = container.querySelector("#action-whitelist");
+    button.addEventListener("click", function( event ) {
         event.preventDefault();
         console.log("ACTION-WHITELIST");
-        // TODO:
+
+        // get opts, add site, save opts.
+        browser.runtime.sendMessage({'action':"getopts"}).then(
+            function(opts) {
+                opts.whitelist.push(domain);
+                return browser.runtime.sendMessage({'action':"setopts", 'opts': opts });
+            }).then( function() {
+                frag = buildHTML("added.",{});
+                button.parentNode.replaceChild(frag, button);
+            });
     }, false);
 }
 
