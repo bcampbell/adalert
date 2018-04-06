@@ -1,8 +1,6 @@
 "use strict";
 
-let tweetButton = document.getElementById("action-tweet");
-let reportButton = document.getElementById("action-report");
-let msgDiv = document.getElementById("msg");
+//let tweetButton = document.getElementById("action-tweet");
 let settingsButton = document.getElementById("settings");
 
 
@@ -31,7 +29,7 @@ function configPopup(tab, pageStatus) {
     if (pageStatus.warnings.length > 0) {
         addWarnings(main, tab.url, pageStatus.warnings);
     } else {
-        addReportButton(main, tab.url);
+        addReportButton(main, tab);
     }
 
     if (!pageStatus.isWhitelisted) {
@@ -63,7 +61,7 @@ function addNotScanned(container, pageURL) {
 function addAddToWhiteList(container, pageURL) {
 
     let domain = parseURL(pageURL).host;
-    let tmpl = `<a id="action-whitelist" class="" href="">add {{domain}} to whitelist</a>`;
+    let tmpl = `<a id="action-whitelist" class="" href="">add {{domain}} to list of sites to check</a>`;
     let frag = buildHTML(tmpl,{'domain':domain});
     container.append(frag);
     let button = container.querySelector("#action-whitelist");
@@ -83,16 +81,31 @@ function addAddToWhiteList(container, pageURL) {
     }, false);
 }
 
-function addReportButton(container, pageURL) {
+function addReportButton(container, tab) {
+
+    let pageURL = tab.url;
+    let title = tab.title;
 
     let domain = parseURL(pageURL).host;
     let tmpl = `<p>Think this looks like sponsored content? <a id="action-report" class="btn" href="">Flag it</a><p>`;
     let frag = buildHTML(tmpl,{'domain':domain});
     container.append(frag);
-    container.querySelector("#action-report").addEventListener("click", function( event ) {
+
+    let button = container.querySelector("#action-report");
+    button.addEventListener("click", function( event ) {
         event.preventDefault();
-        console.log("ACTION-REPORT");
-        // TODO:
+        browser.runtime.sendMessage({'action':"report", 'url': pageURL, 'title': title})
+            .then( function() {
+                let frag = buildHTML("reported.",{});
+                button.parentNode.replaceChild(frag, button);
+                /*
+                // now rescan the page and show the results
+                browser.tabs.sendMessage(tab.id, {action: "check"})
+                    .then( function(results) {
+                        configPopup(tab,results);
+                    });
+                    */
+            });
     }, false);
 }
 
@@ -127,6 +140,7 @@ browser.tabs.query({
     }).catch(onError);
 //});
 
+/*
 tweetButton.addEventListener("click", function( event ) {
     event.preventDefault();
     let c = browser.tabs.create({
@@ -137,7 +151,9 @@ tweetButton.addEventListener("click", function( event ) {
        window.close();
     });
 }, false);
+*/
 
+/*
 reportButton.addEventListener("click", function( event ) {
     event.preventDefault();
 
@@ -156,6 +172,7 @@ reportButton.addEventListener("click", function( event ) {
 
 
 }, false);
+*/
 
 settingsButton.addEventListener("click", function( event ) {
     event.preventDefault();

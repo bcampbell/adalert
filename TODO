@@ -13,3 +13,4 @@ server lookup api: should return warning kinds
 'add this site to whitelist' button
 add Access-Control-Allow-Origin header on server
 reword: "whitelist" => "list of sites to check"
+tidy up settings page

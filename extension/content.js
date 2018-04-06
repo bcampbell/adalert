@@ -264,10 +264,16 @@ var pageStatus = null;
 
 browser.runtime.onMessage.addListener(request => {
     console.log("content.js: incoming message: ", request);
-    if( request.action == "status") {
-        // popup is requesting the results of our page scan
-        return Promise.resolve(pageStatus);
+    switch( request.action ) {
+        case "status":
+            // popup is requesting the results of our page scan
+            return Promise.resolve(pageStatus);
+        case "check":
+            // popup is requesting the results of our page scan
+            return checkPage();
     }
+    console.log("content.js: bad message: ",request);
+    return Promise.reject("bad action");
 });
 
 

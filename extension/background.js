@@ -1,7 +1,7 @@
 "use strict";
 
-var serverURL = "http://oddie.scumways.com:4000";
-//var serverURL = "http://localhost:4000";
+//var serverURL = "http://oddie.scumways.com:4000";
+var serverURL = "http://localhost:4000";
 
 
 console.log("background.js: HELLO");
@@ -151,7 +151,7 @@ function getOpts() {
 
 
 
-// handle message from the content script
+// handle messages from content script or popup
 browser.runtime.onMessage.addListener(
     function(req, sender) {
         console.log("background.js: got ", req);
@@ -159,7 +159,7 @@ browser.runtime.onMessage.addListener(
             case "scanned": return handleScanned(sender, req.result);
             case "iswhitelisted": return handleIsWhitelisted(req.url);
             case "lookuppage": return hitServer(req.url);
-            case "report": return handleReport(req.url, req.title );
+            case "report": return handleReport(req.url, (req.title === undefined) ? "" : req.title);
             case "getopts": return getOpts();
             case "setopts": return setOpts(req.opts);
         }
