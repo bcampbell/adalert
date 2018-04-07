@@ -22,8 +22,15 @@ function configPopup(tab, pageStatus) {
         main.removeChild(main.lastChild);
     }
 
-    if (!pageStatus.hitServer) {
-        addNotScanned(main, tab.url);
+    switch( pageStatus.serverResults.status) {
+        case "none":
+            addNotScanned(main, tab.url);
+            break;
+        case "error":
+            addServerError(main, tab.url, pageStatus.serverResults.error);
+            break;
+        case "ok":
+            break;
     }
 
     if (pageStatus.warnings.length > 0) {
@@ -34,11 +41,6 @@ function configPopup(tab, pageStatus) {
 
     if (!pageStatus.isWhitelisted) {
         addAddToWhiteList(main, tab.url);
-    }
-
-    // list any warnings
-    if( pageStatus.warnings.length>0) {
-        addWarnings(main, pageStatus.warnings);
     }
 
     let dbugTxt = "debug - page info:\n\n" + JSON.stringify( pageStatus,null,2 );
@@ -57,6 +59,24 @@ function addNotScanned(container, pageURL) {
         // TODO: send 'checkpage' action
     }, false);
 }
+
+
+function addServerError(container, pageURL, errMsg) {
+    let tmpl = 'Server lookup failed (' + errMsg + ')<br/><a id="action-scan" class="btn" href="">try again</a>';
+    let frag = buildHTML(tmpl,{});
+    container.append(frag);
+    container.querySelector("#action-scan").addEventListener("click", function( event ) {
+        event.preventDefault();
+        console.log("ACTION-SCAN");
+        // TODO: send 'checkpage' action
+    }, false);
+}
+
+
+
+
+
+
 
 function addAddToWhiteList(container, pageURL) {
 
@@ -111,7 +131,7 @@ function addReportButton(container, tab) {
 
 
 function addWarnings(container, pageURL, warnings) {
-    let tmpl = `<div>({{conf}}) {{msg}}</div>`;
+    let tmpl = `<div>{{msg}}</div>`;
 
     for( let i=0; i<warnings.length; i++) {
         let w = warnings[i];

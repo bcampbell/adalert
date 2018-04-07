@@ -30,22 +30,21 @@ function hitServer(pageURL) {
             let warnings = [];
             console.log("loaded", req);
             console.log(this.responseText);
-            if (this.status==200) {
-                if( this.responseText) {
-                    let inf = JSON.parse(this.responseText);
-                    warnings.push({'kind':'sponsored',
-                        'confidence':1,
-                        // TODO: localisation
-                        'msg': "Flagged as sponsored content (by " + inf.warns + " people)",
-                        'for': inf.warns,
-                        'against': 0    //inf.against
-                    });
-                }
+            if (this.status<200 || this.status >=300) {
+                resolve({'status':"error", warnings: [], 'error':"HTTP code " + this.status});
+                return;
             }
-            resolve(warnings);
+            let inf = JSON.parse(this.responseText);
+            // TODO: should come directly from server!!!
+            warnings.push({'kind':'sponsored',
+                'msg': "Flagged as sponsored content (by " + inf.warns + " people)",
+                'for': inf.warns,
+                'against': 0    //inf.against
+            });
+            resolve({'status':"ok", 'warnings': warnings});
         });
         req.addEventListener("error", function() {
-            reject("request failed", req);
+            resolve({'status':"error", 'warnings': [], 'error':"request failed"});
         });
         // TODO: hash url for sending
         let u = serverURL + "/api/lookup?u=" + encodeURIComponent(pageURL) 

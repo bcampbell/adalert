@@ -164,38 +164,33 @@ function calcArtScore() {
 function doCheckContent() {
     // do keyword search of page...
     return new Promise(function(resolve, reject) {
+        // TODO: proper indicators!
         let indicators = ["sponsored"];
+
         let hits = searchHTML(document.body, indicators);
-        let warnings = [];
-        if (hits.length>0) {
-            warnings.push({kind: 'sponsored',
-                confidence: 0.3,
-                msg: "This article contains words which might indicate sponsored content..."
-            });
-        }
-        resolve(warnings);
+
+        // promise returns true if page contains indicative words
+        resolve( hits.length>0 ? true: false );
     });
 }
 
+
+// promise returns true if any site-specific sponsored-content matches trigger
 function doCheckRules() {
     return new Promise(function(resolve,reject) {
         console.log("content.js: checking rules...");
-        let warnings = [];
+        let hit = false;
         let rules = getRuleForPage();
         if( rules ) {
             console.log("content.js: applying rules", rules);
             for (var i=0; i<rules.length; i++) {
                 var rule = rules[i];
                 if (rule.match()) {
-                    warnings.push({kind: 'sponsored',
-                        confidence: 1,
-                        msg: "This contains sponsored content"
-                    });
-                    break;
+                    resolve(true);
                 }
             }
         }
-        resolve(warnings);
+        resolve(false);
     });
 }
 
@@ -219,17 +214,20 @@ function checkPage(force) {
             // all the conditions under which we scan the page
             let scan = (isWhitelisted || force || (opts.checkarts && artScore>0) );
 
-            if( !scan ) {
-                return Promise.resolve({
-                    'url' : pageURL,
+            let out = { 'url' : pageURL,
+                    'checked': scan,
                     'isWhitelisted': isWhitelisted,
                     'artScore': artScore,
-                    'hitServer': false,
                     'twits': twits,
+                    'serverResults': {'status':"none"},
+                    'indicative': false,
+                    'ruleMatch': false,
                     'warnings': []
-                });
-            }
+            };
 
+            if( !scan ) {
+                return Promise.resolve(out);
+            }
 
             let pserv = browser.runtime.sendMessage( {'action': "lookuppage", 'url': pageURL} );
             let prules = doCheckRules();
@@ -237,18 +235,22 @@ function checkPage(force) {
 
             return Promise.all([pserv,prules,pcontent]).then( function(results) {
                 console.log("content.js: scan complete:",results);
-                let w = [];
-                w = w.concat(results[0]);
-                w = w.concat(results[1]);
-                w = w.concat(results[2]);
 
-                let out = {
-                    'url': pageURL,
-                    'isWhitelisted': isWhitelisted,
-                    'hitServer': true,
-                    'artScore': artScore,
-                    'twits': twits,
-                    'warnings': w };
+                out.indicative = results[2];
+                out.ruleMatch = results[1];
+                out.serverResults = results[0];
+
+                out.warnings = out.serverResults.warnings;
+
+                // if there's a site-specific rule match, synthesise a warning
+                // TODO: better merge this with server sponsored-content warning
+                if( out.ruleMatch) {
+                    warnings.push({'kind':'sponsored',
+                        'msg': "This is sponsored content",
+                        'for': 0,
+                        'against': 0});
+                }
+
                 return Promise.resolve(out);
             });
         });
