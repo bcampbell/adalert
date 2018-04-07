@@ -27,21 +27,17 @@ function hitServer(pageURL) {
     return new Promise(function(resolve, reject) {
         let req = new XMLHttpRequest();
         req.addEventListener("load", function() {
-            let warnings = [];
             if (this.status<200 || this.status >=300) {
                 resolve({'status':"error", warnings: [], 'error':"HTTP code " + this.status});
                 return;
             }
+
+            let inf = {};
             if( this.responseText) {
-                let inf = JSON.parse(this.responseText);
-                // TODO: should come directly from server!!!
-                warnings.push({'kind':'sponsored',
-                    'msg': "Flagged as sponsored content (by " + inf.warns + " people)",
-                    'for': inf.warns,
-                    'against': 0    //inf.against
-                });
+                inf = JSON.parse(this.responseText);
             }
-            resolve({'status':"ok", 'warnings': warnings});
+            inf['status'] = "ok";
+            resolve(inf);
         });
         req.addEventListener("error", function() {
             resolve({'status':"error", 'warnings': [], 'error':"request failed"});

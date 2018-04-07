@@ -9,8 +9,6 @@ rename project
 update labels after flagging
 less intrusive labels
 cookie to prevent double-voting
-server lookup api: should return warning kinds
-'add this site to whitelist' button
 add Access-Control-Allow-Origin header on server
 reword: "whitelist" => "list of sites to check"
 tidy up settings page

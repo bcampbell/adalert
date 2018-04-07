@@ -49,7 +49,7 @@ function showWarnings(warnings) {
 
     for (var i=0; i<warnings.length; i++) {
         var w = warnings[i];
-        var frag = build(render(tmpl, {"msg": w.msg}));
+        var frag = build(render(tmpl, {"msg": w.default_msg}));
         holder.appendChild(frag);
     }
 }
@@ -246,7 +246,7 @@ function checkPage(force) {
                 // TODO: better merge this with server sponsored-content warning
                 if( out.ruleMatch) {
                     warnings.push({'kind':'sponsored',
-                        'msg': "This is sponsored content",
+                        'default_msg': "This is sponsored content",
                         'for': 0,
                         'against': 0});
                 }
@@ -271,7 +271,6 @@ browser.runtime.onMessage.addListener(request => {
             // popup is requesting the results of our page scan
             return Promise.resolve(pageStatus);
         case "check":
-            // popup is requesting the results of our page scan
             return checkPage();
     }
     console.log("content.js: bad message: ",request);

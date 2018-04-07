@@ -121,13 +121,19 @@ func (st *Store) schemaVersion() (int, error) {
 	return v, nil
 }
 
+type Warning struct {
+	Kind       string `json:"kind"`
+	For        int    `json:"for"`
+	Against    int    `json:"against"`
+	DefaultMsg string `json:"default_msg"`
+}
+
 type Page struct {
-	ID           int64     `json:"id,omitempty"`
-	CanonicalURL string    `json:"canonical_url,omitempty"`
-	Title        string    `json:"title,omitempty"`
-	Created      time.Time `json:"created,omitempty"`
-	Warns        int       `json:"warns,omitempty"`
-	Disputes     int       `json:"disputes,omitempty"`
+	ID           int64     `json:"id"`
+	CanonicalURL string    `json:"canonical_url"`
+	Title        string    `json:"title"`
+	Created      time.Time `json:"created"`
+	Warnings     []Warning `json:"warnings"`
 }
 
 // look up a page in the database by hashed url
@@ -154,9 +160,54 @@ func (st *Store) pageInfo(pageID int64) (*Page, error) {
 	}
 
 	// count the warnings
-	err = st.db.QueryRow(`SELECT count(*) FROM warning WHERE page_id=?`, pageID).Scan(&inf.Warns)
+
+	//	err = st.db.QueryRow(`SELECT count(*) FROM warning WHERE page_id=?`, pageID).Scan(&inf.Warns)
 	if err != nil {
 		return nil, err
+	}
+
+	// collate the warnings
+	q := `SELECT count(*) as cnt, kind,quant FROM warning WHERE page_id=? GROUP BY page_id, kind, quant`
+	rows, err := st.db.Query(q, pageID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	warns := map[string]Warning{}
+	for rows.Next() {
+		var cnt int
+		var kind string
+		var quant int
+		err := rows.Scan(&cnt, &kind, &quant)
+		if err != nil {
+			return nil, err
+		}
+		w, got := warns[kind]
+		if !got {
+			w.Kind = kind
+			// TODO!
+			if kind == "sponsored" {
+				w.DefaultMsg = "Sponsored content"
+			}
+		}
+		if quant < 0 {
+			w.Against = cnt
+		}
+		if quant > 0 {
+			w.For = cnt
+		}
+		warns[kind] = w
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	// return collated warnings as list
+	inf.Warnings = []Warning{}
+	for _, w := range warns {
+		inf.Warnings = append(inf.Warnings, w)
 	}
 
 	return inf, nil

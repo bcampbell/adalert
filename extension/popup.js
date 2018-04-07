@@ -16,6 +16,8 @@ function onError(error) {
 function configPopup(tab, pageStatus) {
     console.log("configPopup():" ,tab, pageStatus);
 
+    let atRefs = pageStatus.twits.join(" ");
+
     let main = document.getElementById("popup-content");
     // clear anything existing
     while (main.hasChildNodes()) {
@@ -33,10 +35,15 @@ function configPopup(tab, pageStatus) {
             break;
     }
 
+
     if (pageStatus.warnings.length > 0) {
         addWarnings(main, tab.url, pageStatus.warnings);
+        let foo = [atRefs, "This looks like #sponsored content"].join(" ");
+        addTweetCallToAction(main, tab.url, foo );
     } else {
         addReportButton(main, tab);
+        let foo = [atRefs, "This looks like unmarked #sponsored content"].join(" ");
+        addTweetCallToAction(main, tab.url, foo );
     }
 
     if (!pageStatus.isWhitelisted) {
@@ -135,13 +142,36 @@ function addWarnings(container, pageURL, warnings) {
 
     for( let i=0; i<warnings.length; i++) {
         let w = warnings[i];
-        let el = buildHTML(tmpl, {msg: w.msg, conf: w.confidence});
+        let el = buildHTML(tmpl, {msg: w.default_msg, conf: w.confidence});
         container.append(el); 
     }
 }
 
 
+function addTweetCallToAction(container, pageURL, tweetTxt ) {
+    let tmpl = `<div><a id="action-tweet" class="btn" href="">Tweet about it</a></div>`;
+    let frag = buildHTML(tmpl,{});
+    container.append(frag);
 
+//    let atRefs = twits.join(" ");
+//    let tweetTxt = [atRefs, "This looks like unmarked #sponsored content"].join(" ");
+
+    let tweetURL = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(tweetTxt) +"&url=" + encodeURIComponent(pageURL);
+
+   
+    let button = container.querySelector("#action-tweet");
+    button.href = tweetURL;
+    button.addEventListener("click", function( event ) {
+        event.preventDefault();
+        let c = browser.tabs.create({
+            url: button.href,
+            active: true
+            });
+        c.then( function() {
+           window.close();
+        });
+    },false);
+}
 
 
 //
