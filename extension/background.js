@@ -4,19 +4,19 @@
 var serverURL = "http://localhost:4000";
 
 
-console.log("background.js: HELLO");
-
-
-
-
-// content page has completed its scan - update popup
+// content page has completed its scan - update popup button state accordingly
 function handleScanned(sender, pageStatus) {
     let n = pageStatus.warnings.length;
     if (n>0) {
-        console.log("BADGERTIME: " + n);
+        // there are warnings
         var badgeTxt = n.toString();
         browser.browserAction.setBadgeText({text: badgeTxt, tabId: sender.tab.id});
+    } else if( pageStatus.indicative) {
+        // show neutralish-looking badge
+        browser.browserAction.setBadgeText({text: "?", tabId: sender.tab.id});
+        browser.browserAction.setBadgeBackgroundColor({color:"#888", tabId: sender.tab.id});
     } else {
+        // nothing to report
         browser.browserAction.setBadgeText({text: "", tabId: sender.tab.id});
     }
     return Promise.resolve();
@@ -28,19 +28,19 @@ function hitServer(pageURL) {
         let req = new XMLHttpRequest();
         req.addEventListener("load", function() {
             let warnings = [];
-            console.log("loaded", req);
-            console.log(this.responseText);
             if (this.status<200 || this.status >=300) {
                 resolve({'status':"error", warnings: [], 'error':"HTTP code " + this.status});
                 return;
             }
-            let inf = JSON.parse(this.responseText);
-            // TODO: should come directly from server!!!
-            warnings.push({'kind':'sponsored',
-                'msg': "Flagged as sponsored content (by " + inf.warns + " people)",
-                'for': inf.warns,
-                'against': 0    //inf.against
-            });
+            if( this.responseText) {
+                let inf = JSON.parse(this.responseText);
+                // TODO: should come directly from server!!!
+                warnings.push({'kind':'sponsored',
+                    'msg': "Flagged as sponsored content (by " + inf.warns + " people)",
+                    'for': inf.warns,
+                    'against': 0    //inf.against
+                });
+            }
             resolve({'status':"ok", 'warnings': warnings});
         });
         req.addEventListener("error", function() {
@@ -48,9 +48,8 @@ function hitServer(pageURL) {
         });
         // TODO: hash url for sending
         let u = serverURL + "/api/lookup?u=" + encodeURIComponent(pageURL) 
-        console.log("Start lookup:", u);
+        console.log("background.js: server lookup:", u);
         req.open("GET", u);
-        console.log("FOO: sending");
         req.send();
     });
 }
@@ -58,8 +57,6 @@ function hitServer(pageURL) {
 
 // report a page as sponsored content
 function handleReport(pageURL, title) {
-
-    console.log("background.js report:",pageURL,title);
 
     return new Promise(function(resolve, reject) {
         let req = new XMLHttpRequest();
@@ -78,6 +75,7 @@ function handleReport(pageURL, title) {
         data.append('u', pageURL);
         data.append('t', title);
 
+        console.log("background.js sending report: ",req);
         req.send(data);
     });
 }
@@ -88,7 +86,6 @@ function handleReport(pageURL, title) {
 // build a lookup table for the whitelist sites
 function cookWhitelist(wl) {
     let cooked = {};
-    console.log("Cooking whitelist: ",wl);
     wl.forEach( function(domain) {
         domain = normaliseDomain(domain);
         cooked[domain] = true;
@@ -114,7 +111,7 @@ function handleIsWhitelisted(pageURL) {
 // set new options
 // returns a promise
 function setOpts(newOpts) {
-    console.log("saving ",newOpts);
+    console.log("background.js: saving opts ",newOpts);
     // update the cache, then save to storage
     cachedOpts = newOpts;
     cookedWhitelist = cookWhitelist(newOpts.whitelist);
@@ -153,7 +150,7 @@ function getOpts() {
 // handle messages from content script or popup
 browser.runtime.onMessage.addListener(
     function(req, sender) {
-        console.log("background.js: got ", req);
+        //console.log("background.js: got ", req);
         switch (req.action) {
             case "scanned": return handleScanned(sender, req.result);
             case "iswhitelisted": return handleIsWhitelisted(req.url);

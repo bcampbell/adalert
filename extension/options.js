@@ -14,7 +14,7 @@ function saveOptions(e) {
 function loadOptions() {
     var getting = browser.runtime.sendMessage({'action': "getopts"});
     getting.then( function(result) {
-            console.log("got ",result);
+//            console.log("got ",result);
             let raw =  result.whitelist.join("\n");
             document.querySelector("#whitelist").value = raw;
             let chkarts = result.checkarts;
