@@ -26,10 +26,10 @@ function configPopup(tab, pageStatus) {
 
     switch( pageStatus.serverResults.status) {
         case "none":
-            addNotScanned(main, tab.url);
+            addNotScanned(main, tab);
             break;
         case "error":
-            addServerError(main, tab.url, pageStatus.serverResults.error);
+            addServerError(main, tab, pageStatus.serverResults.error);
             break;
         case "ok":
             break;
@@ -56,26 +56,34 @@ function configPopup(tab, pageStatus) {
 
 
 
-function addNotScanned(container, pageURL) {
+function addNotScanned(container, tab ) {
+    let pageURL = tab.url;
     let tmpl = `This page was not scanned.<br/><a id="action-scan" class="btn" href="">Scan it now</a>`;
     let frag = buildHTML(tmpl,{});
     container.append(frag);
     container.querySelector("#action-scan").addEventListener("click", function( event ) {
         event.preventDefault();
-        console.log("ACTION-SCAN");
-        // TODO: send 'checkpage' action
+        browser.tabs.sendMessage(tab.id, {action: "check"})
+            .then( function(results) {
+               console.log("FOOK:",results);
+               configPopup(tab,results);
+            });
     }, false);
 }
 
 
-function addServerError(container, pageURL, errMsg) {
+function addServerError(container, tab, errMsg) {
+    let PageURL = tab.url;
     let tmpl = 'Server lookup failed (' + errMsg + ')<br/><a id="action-scan" class="btn" href="">try again</a>';
     let frag = buildHTML(tmpl,{});
     container.append(frag);
     container.querySelector("#action-scan").addEventListener("click", function( event ) {
         event.preventDefault();
-        console.log("ACTION-SCAN");
-        // TODO: send 'checkpage' action
+        browser.tabs.sendMessage(tab.id, {action: "check"})
+            .then( function(results) {
+               console.log("FOOK:",results);
+               configPopup(tab,results);
+            });
     }, false);
 }
 
@@ -125,13 +133,11 @@ function addReportButton(container, tab) {
             .then( function() {
                 let frag = buildHTML("reported.",{});
                 button.parentNode.replaceChild(frag, button);
-                /*
                 // now rescan the page and show the results
                 browser.tabs.sendMessage(tab.id, {action: "check"})
                     .then( function(results) {
                         configPopup(tab,results);
                     });
-                    */
             });
     }, false);
 }

@@ -226,6 +226,7 @@ function checkPage(force) {
             };
 
             if( !scan ) {
+                console.log("content.js: checked (noscan): ",out);
                 return Promise.resolve(out);
             }
 
@@ -251,6 +252,7 @@ function checkPage(force) {
                         'against': 0});
                 }
 
+                console.log("content.js: checked (scanned): ",out);
                 return Promise.resolve(out);
             });
         });
@@ -271,7 +273,15 @@ browser.runtime.onMessage.addListener(request => {
             // popup is requesting the results of our page scan
             return Promise.resolve(pageStatus);
         case "check":
-            return checkPage();
+            return checkPage(true).then(function(results){
+                pageStatus = results;
+                console.log("Scan complete: ", pageStatus);
+                browser.runtime.sendMessage( {'action': "scanned", 'result': pageStatus} );
+                if( pageStatus.warnings.length>0) {
+                    showWarnings(pageStatus.warnings);
+                }
+                return Promise.resolve(pageStatus);
+            });
     }
     console.log("content.js: bad message: ",request);
     return Promise.reject("bad action");

@@ -35,6 +35,8 @@ function hitServer(pageURL) {
             let inf = {};
             if( this.responseText) {
                 inf = JSON.parse(this.responseText);
+            } else {
+                inf['warnings'] = [];
             }
             inf['status'] = "ok";
             resolve(inf);
