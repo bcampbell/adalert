@@ -66,7 +66,7 @@ function configPopup(tab, pageStatus) {
 
 function addNotScanned(container, tab ) {
     let pageURL = tab.url;
-    let tmpl = `This page was not scanned.<br/><a id="action-scan" class="btn" href="">Scan it now</a>`;
+    let tmpl = `<div>This page was not scanned.<br/><a id="action-scan" class="btn" href="">Scan it now</a></div>`;
     let frag = buildHTML(tmpl,{});
     container.append(frag);
     container.querySelector("#action-scan").addEventListener("click", function( event ) {
