@@ -123,12 +123,13 @@ func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 
 func (srv *Server) reportHandler(w http.ResponseWriter, req *http.Request) {
 
-	u := req.FormValue("u")
-	title := req.FormValue("t")
+	kind := req.FormValue("kind")
+	u := req.FormValue("url")
+	title := req.FormValue("title")
 
-	fmt.Printf("report: %s %s\n", u, title)
+	fmt.Printf("report %s: %s %s\n", kind, u, title)
 
-	err := srv.store.Report([]string{u}, title, "sponsored", 1)
+	err := srv.store.Report([]string{u}, title, kind, 1)
 	if err != nil {
 		srv.Emit500(w, req, err)
 		return

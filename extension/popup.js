@@ -41,6 +41,12 @@ function configPopup(tab, pageStatus) {
         let foo = [atRefs, "This looks like #sponsored content"].join(" ");
         addTweetCallToAction(main, tab.url, foo );
     } else {
+        if( pageStatus.indicative) {
+            addIndicative(main);
+        } else {
+            addOK(main);
+        }
+
         addReportButton(main, tab);
         let foo = [atRefs, "This looks like unmarked #sponsored content"].join(" ");
         addTweetCallToAction(main, tab.url, foo );
@@ -89,6 +95,17 @@ function addServerError(container, tab, errMsg) {
 
 
 
+function addIndicative(container) {
+    let tmpl = '<div>This page contains terms which might be indicative of sponsored content</div>';
+    let frag = buildHTML(tmpl,{});
+    container.append(frag);
+}
+
+function addOK(container) {
+    let tmpl = '<div>No issues found - this page looks OK</div>';
+    let frag = buildHTML(tmpl,{});
+    container.append(frag);
+}
 
 
 
@@ -144,7 +161,11 @@ function addReportButton(container, tab) {
 
 
 function addWarnings(container, pageURL, warnings) {
-    let tmpl = `<div>{{msg}}</div>`;
+    let tmpl = `<div><div class="warning-label">{{msg}}</div>
+    <div>
+        <small>{{agreeCnt}} <a id="action-agree" href="">agree</a>, {{disagreeCnt}} <a id="action-disagree">disagree</a></small>
+    </div>
+</div>`;
 
     for( let i=0; i<warnings.length; i++) {
         let w = warnings[i];
@@ -155,7 +176,7 @@ function addWarnings(container, pageURL, warnings) {
 
 
 function addTweetCallToAction(container, pageURL, tweetTxt ) {
-    let tmpl = `<div><a id="action-tweet" class="btn" href="">Tweet about it</a></div>`;
+    let tmpl = `<a id="action-tweet" class="btn" href="">Tweet about it</a>`;
     let frag = buildHTML(tmpl,{});
     container.append(frag);
 
