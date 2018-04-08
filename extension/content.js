@@ -235,7 +235,6 @@ function checkPage(force) {
             let pcontent = doCheckContent();
 
             return Promise.all([pserv,prules,pcontent]).then( function(results) {
-                console.log("content.js: scan complete:",results);
 
                 out.indicative = results[2];
                 out.ruleMatch = results[1];
@@ -246,13 +245,12 @@ function checkPage(force) {
                 // if there's a site-specific rule match, synthesise a warning
                 // TODO: better merge this with server sponsored-content warning
                 if( out.ruleMatch) {
-                    warnings.push({'kind':'sponsored',
+                    out.warnings.push({'kind':'sponsored',
                         'default_msg': "This is sponsored content",
                         'for': 0,
                         'against': 0});
                 }
 
-                console.log("content.js: checked (scanned): ",out);
                 return Promise.resolve(out);
             });
         });

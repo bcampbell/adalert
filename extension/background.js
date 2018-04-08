@@ -28,15 +28,17 @@ function hitServer(pageURL) {
         let req = new XMLHttpRequest();
         req.addEventListener("load", function() {
             if (this.status<200 || this.status >=300) {
-                resolve({'status':"error", warnings: [], 'error':"HTTP code " + this.status});
+                resolve({'status':"error", 'warnings': [], 'error':"HTTP code " + this.status});
                 return;
             }
 
             let inf = {};
             if( this.responseText) {
                 inf = JSON.parse(this.responseText);
+                console.log("server returns json: ",inf);
             } else {
                 inf['warnings'] = [];
+                console.log("server returns: ",this.responseText);
             }
             inf['status'] = "ok";
             resolve(inf);

@@ -1,14 +1,14 @@
 update per-site rules to cover new examples
 chrome store
-popup results - show warnings there too
-manual check button for popup
 add feature to dispute flags
-handle displaying multiple warnings (just pick one?)
+
 only send hashed urls for lookups
 rename project
-update labels after flagging
 less intrusive labels
 cookie to prevent double-voting
 add Access-Control-Allow-Origin header on server
 reword: "whitelist" => "list of sites to check"
 tidy up settings page
+set up https on server
+popup tidy and styling
+style for warning labels
