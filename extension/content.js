@@ -38,12 +38,12 @@ var holder = null;
 
 function showWarnings(warnings) {
 
-    var tmpl = `<div>warning:<br/>{{msg}}</div>`;
+    var tmpl = `<div class="XYZZY-sticker-warning">{{msg}}</div>`;
 
 
     if (holder===null) {
         holder = document.createElement('div');
-        holder.id = "XYZZY_holder";
+        holder.id = "XYZZY-holder";
         document.body.insertBefore(holder, document.body.childNodes[0]);
     }
 
@@ -246,7 +246,7 @@ function checkPage(force) {
                 // TODO: better merge this with server sponsored-content warning
                 if( out.ruleMatch) {
                     out.warnings.push({'kind':'sponsored',
-                        'default_msg': "This is sponsored content",
+                        'default_msg': "Sponsored content",
                         'for': 0,
                         'against': 0});
                 }

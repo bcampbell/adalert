@@ -1,20 +1,31 @@
-#XYZZY_holder {
-    background-color: black;
-    color: white;
+#XYZZY-holder {
     position: fixed;
-    z-index: 2147483647;
+    z-index: 2147483646;
     left: 8px;
-    top: 8px;
-    transform: rotate(-15deg);
+    top: 20px;
+    transform: rotate(-10deg);
+    margin: 0;
+    box-sizing: content-box;
+    font-family: sans-serif;
+}
+
+.XYZZY-sticker-warning {
+
     width: 200px;
-    height: 100px;
-    border: 2px solid white;
+    /*height: 100px; */
+    color: #000;
+    background-color: #fbd415;
+    border: 8px solid #F8BB08; 
+
     box-shadow: 8px 8px 8px rgba(0,0,0,0.1);
-    font-size: 14px;
+    border-radius: 0.5rem;
+    font-size: 18px;
     line-height: 1.5;
     margin: 0;
     padding: 8px;
     box-sizing: content-box;
     font-family: sans-serif;
+    text-align: center;
+    font-weight: bold;
 }
 

@@ -18,7 +18,7 @@ function configPopup(tab, pageStatus) {
 
     let atRefs = pageStatus.twits.join(" ");
 
-    let main = document.getElementById("popup-content");
+    let main = document.querySelector(".popup-main");
     // clear anything existing
     while (main.hasChildNodes()) {
         main.removeChild(main.lastChild);
@@ -40,12 +40,14 @@ function configPopup(tab, pageStatus) {
         addWarnings(main, tab.url, pageStatus.warnings);
         let foo = [atRefs, "This looks like #sponsored content"].join(" ");
         addTweetCallToAction(main, tab.url, foo );
-    } else {
-        if( pageStatus.indicative) {
-            addIndicative(main);
-        } else {
-            addOK(main);
-        }
+    } else if (pageStatus.indicative) {
+        addIndicative(main);
+
+        addReportButton(main, tab);
+        let foo = [atRefs, "This looks like unmarked #sponsored content"].join(" ");
+        addTweetCallToAction(main, tab.url, foo );
+    } else if (pageStatus.checked) {
+        addOK(main);
 
         addReportButton(main, tab);
         let foo = [atRefs, "This looks like unmarked #sponsored content"].join(" ");
@@ -80,7 +82,7 @@ function addNotScanned(container, tab ) {
 
 function addServerError(container, tab, errMsg) {
     let PageURL = tab.url;
-    let tmpl = 'Server lookup failed (' + errMsg + ')<br/><a id="action-scan" class="btn" href="">try again</a>';
+    let tmpl = 'Server lookup failed (' + errMsg + ')<br/><a id="action-scan" class="btn" href=""><span class="oi" data-glyph="reload" title="reload" aria-hidden="true"> try again</a>';
     let frag = buildHTML(tmpl,{});
     container.append(frag);
     container.querySelector("#action-scan").addEventListener("click", function( event ) {
@@ -96,13 +98,13 @@ function addServerError(container, tab, errMsg) {
 
 
 function addIndicative(container) {
-    let tmpl = '<div>This page contains terms which might be indicative of sponsored content</div>';
+    let tmpl = '<div class="sticker sticker-indicative">This page contains terms which might  indicate sponsored content</div>';
     let frag = buildHTML(tmpl,{});
     container.append(frag);
 }
 
 function addOK(container) {
-    let tmpl = '<div>No issues found - this page looks OK</div>';
+    let tmpl = '<div class="sticker sticker-ok">No issues found - this page looks OK</div>';
     let frag = buildHTML(tmpl,{});
     container.append(frag);
 }
@@ -113,7 +115,7 @@ function addOK(container) {
 function addAddToWhiteList(container, pageURL) {
 
     let domain = parseURL(pageURL).host;
-    let tmpl = `<a id="action-whitelist" class="" href="">add {{domain}} to list of sites to check</a>`;
+    let tmpl = `<a id="action-whitelist" class="" href=""><span class="oi" data-glyph="plus" title="plus" aria-hidden="true"> add {{domain}} to list of sites to check</a>`;
     let frag = buildHTML(tmpl,{'domain':domain});
     container.append(frag);
     let button = container.querySelector("#action-whitelist");
@@ -139,7 +141,8 @@ function addReportButton(container, tab) {
     let title = tab.title;
 
     let domain = parseURL(pageURL).host;
-    let tmpl = `<p>Think this looks like sponsored content? <a id="action-report" class="btn" href="">Flag it</a><p>`;
+    let tmpl = `<div>Think this looks like sponsored content?</div>
+<div><a id="action-report" class="btn"><span class="oi" data-glyph="flag" title="flag" aria-hidden="true"> Flag it</a></div>`;
     let frag = buildHTML(tmpl,{'domain':domain});
     container.append(frag);
 
@@ -161,22 +164,28 @@ function addReportButton(container, tab) {
 
 
 function addWarnings(container, pageURL, warnings) {
-    let tmpl = `<div><div class="warning-label">{{msg}}</div>
-    <div>
-        <small>{{agreeCnt}} <a id="action-agree" href="">agree</a>, {{disagreeCnt}} <a id="action-disagree">disagree</a></small>
+    let tmpl = `<div>
+    <div class="sticker sticker-warning"><span class="oi" data-glyph="warning" title="warning" aria-hidden="true"> {{msg}}</div>
+    <div class="voting">
+         <a id="action-agree" class="btn"><span class="oi" data-glyph="thumb-up" title="agree" aria-hidden="true"></a> ({{agreeCnt}} agree)
+         <a id="action-disagree" class="btn"><span class="oi" data-glyph="thumb-down" title="disagree" aria-hidden="true"></a> ({{disagreeCnt}} disagree)
     </div>
 </div>`;
 
     for( let i=0; i<warnings.length; i++) {
         let w = warnings[i];
-        let el = buildHTML(tmpl, {msg: w.default_msg, conf: w.confidence});
+        let el = buildHTML(tmpl, {
+            msg: w.default_msg,
+            agreeCnt: w.for,
+            disagreeCnt: w.against
+        });
         container.append(el); 
     }
 }
 
 
 function addTweetCallToAction(container, pageURL, tweetTxt ) {
-    let tmpl = `<a id="action-tweet" class="btn" href="">Tweet about it</a>`;
+    let tmpl = `<a id="action-tweet" class="btn" href=""><span class="oi" data-glyph="share" title="share" aria-hidden="true"> Tweet about it</a>`;
     let frag = buildHTML(tmpl,{});
     container.append(frag);
 

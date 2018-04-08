@@ -10,6 +10,7 @@ function handleScanned(sender, pageStatus) {
     if (n>0) {
         // there are warnings
         var badgeTxt = n.toString();
+        browser.browserAction.setBadgeBackgroundColor({color:"rgb(217, 0, 0)", tabId: sender.tab.id});
         browser.browserAction.setBadgeText({text: badgeTxt, tabId: sender.tab.id});
     } else if( pageStatus.indicative) {
         // show neutralish-looking badge

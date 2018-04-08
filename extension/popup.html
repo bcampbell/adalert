@@ -4,24 +4,29 @@
   <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="popup.css"/>
+    <link href="open-iconic/css/open-iconic.css" rel="stylesheet">
   </head>
 
 <body>
-  <h1>AdDetect</h1>
-  <div id="popup-content">
+<!--  <header class="popup-header">
+    <h1>AdDetect</h1>
+</header> -->
+  <div class="popup-main">
   </div>
-  <div class="dbug-container">
-    <input class="vis-toggle" id="show-dbug" type="checkbox" ><label for="show-dbug">show debug info?</label>
-    <pre class="vis" id="dbug">
-    page was not scanned.
-    </pre>
-  </div>
-  <div>
-    <a class="" id="settings" href="">settings</a>
-  </div>
+  <footer class="popup-footer">
+    <div class="dbug-container is-hidden">
+      <input class="vis-toggle" id="show-dbug" type="checkbox" ><label for="show-dbug">show debug info?</label>
+      <pre class="vis" id="dbug">
+      page was not scanned.
+      </pre>
+    </div>
+    <div>
+      <a class="" id="settings" href=""><span class="oi" data-glyph="cog" title="cog" aria-hidden="true"></span> settings</a>
+    </div>
+  </footer>
+
   <script src="browser-polyfill.js"></script>
   <script src="util.js"></script>
   <script src="popup.js"></script>
-
 </body>
 </html>
