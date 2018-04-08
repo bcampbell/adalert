@@ -206,6 +206,14 @@ _window.AD_DETECTOR_RULES = {
       },
     },
   ],
+  'dailymail.co.uk': [
+    {
+      example: 'http://www.dailymail.co.uk/tvshowbiz/article-5566321/As-hit-Imposters-returns-explosive-second-season-look-famous-real-life-cons.html',
+      match: function() {
+        return selectorAppears('.article-text .sponsored-by');
+      },
+    },
+  ],
   'deadspin.com': [
     {
       example: 'http://deadspin.com/5969545/exclusive-could-this-be-chris-pauls-secret-twin-brother',
