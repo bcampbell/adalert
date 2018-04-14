@@ -12,11 +12,20 @@
     <h1>AdDetect options</h1>
 
     <form>
-      <label for="whitelist">Whitelist</label><br/>
-      <textarea id="whitelist" name="whitelist" rows="12">
-      </textarea><br/>
-      <input type="checkbox" name="checkarts" id="checkarts">
-      <button type="submit">Save</button>
+      <div class="form-group">
+        <label for="whitelist">Sites to automatically check:</label><br/>
+        <textarea class="form-control" id="whitelist" name="whitelist" rows="12">
+        </textarea><br/>
+        <small class="help-block">One site per line</small>
+      </div>
+      <div class="form-group">
+        <input type="checkbox" name="checkarts" id="checkarts">
+        <label for"checkarts">Check pages which look like articles?</label>
+        <small class="help-block">(even if they're not on the list of sites to check)</small>
+      </div>
+      <div class="form-group">
+        <button type="submit">Save</button>
+      </div>
     </form>
   </div>
   <script src="options.js"></script>
