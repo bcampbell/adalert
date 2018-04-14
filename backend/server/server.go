@@ -97,7 +97,11 @@ func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 	u := q.Get("u")
 	h := q.Get("h")
 
-	fmt.Printf("Lookup: %s\n", u)
+	if u == "" {
+		fmt.Printf("Lookup: %s\n", u)
+	} else {
+		fmt.Printf("Lookup: %s\n", h)
+	}
 
 	if h == "" && u != "" {
 		h = HashURL(u)
@@ -110,7 +114,7 @@ func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if inf == nil {
-		return
+		return // TODO: return some json to say not found!
 	}
 
 	enc := json.NewEncoder(w)
@@ -121,15 +125,34 @@ func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// TODO: should support passing in multiple URLs (making sure one is marked canonical)
 func (srv *Server) reportHandler(w http.ResponseWriter, req *http.Request) {
 
 	kind := req.FormValue("kind")
 	u := req.FormValue("url")
 	title := req.FormValue("title")
 
-	fmt.Printf("report %s: %s %s\n", kind, u, title)
+	var quant int = 1
+	foo := req.FormValue("quant")
+	if foo != "" {
+		var err error
+		quant, err = strconv.Atoi(foo)
+		if err != nil {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			fmt.Fprintf(os.Stderr, "ERR: bad quant '%s' (%s)\n", foo, err)
+			return
+		}
+	}
 
-	err := srv.store.Report([]string{u}, title, kind, 1)
+	if quant < 0 {
+		quant = -1
+	} else {
+		quant = 1
+	}
+
+	fmt.Printf("report %s: %s %s %d\n", kind, u, title, quant)
+
+	err := srv.store.Report([]string{u}, title, kind, quant)
 	if err != nil {
 		srv.Emit500(w, req, err)
 		return
