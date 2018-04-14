@@ -149,7 +149,7 @@ function addReportButton(container, tab) {
     let button = container.querySelector("#action-report");
     button.addEventListener("click", function( event ) {
         event.preventDefault();
-        browser.runtime.sendMessage({'action':"report", 'url': pageURL, 'title': title})
+        browser.runtime.sendMessage({'action':"report", 'url': pageURL, 'title': title, 'quant':1})
             .then( function() {
                 let frag = buildHTML("reported.",{});
                 button.parentNode.replaceChild(frag, button);
