@@ -8,3 +8,5 @@ reword: "whitelist" => "list of sites to check"
 set up https on server
 browser action icon should be monochrome until page is scanned
 tidy up lookup API results
+extract canonical and alternate urls in content.js and use in API calls
+use unsourced.org subdomain to host server

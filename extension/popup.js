@@ -115,7 +115,7 @@ function addOK(container) {
 function addAddToWhiteList(container, pageURL) {
 
     let domain = parseURL(pageURL).host;
-    let tmpl = `<a id="action-whitelist" class="" href=""><span class="oi" data-glyph="plus" title="plus" aria-hidden="true"> add {{domain}} to list of sites to check</a>`;
+    let tmpl = `<div><a id="action-whitelist" class="" href=""><span class="oi" data-glyph="plus" title="plus" aria-hidden="true"> add {{domain}} to list of sites to check</a></div>`;
     let frag = buildHTML(tmpl,{'domain':domain});
     container.append(frag);
     let button = container.querySelector("#action-whitelist");
