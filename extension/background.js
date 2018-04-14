@@ -25,6 +25,8 @@ function handleScanned(sender, pageStatus) {
 
 // perform a lookup of the given url on the server
 function hitServer(pageURL) {
+
+
     return new Promise(function(resolve, reject) {
         let req = new XMLHttpRequest();
         req.addEventListener("load", function() {
@@ -47,8 +49,13 @@ function hitServer(pageURL) {
         req.addEventListener("error", function() {
             resolve({'status':"error", 'warnings': [], 'error':"request failed"});
         });
-        // TODO: hash url for sending
-        let u = serverURL + "/api/lookup?u=" + encodeURIComponent(pageURL) 
+        // api supports lookup by hash or url
+//        let u = serverURL + "/api/lookup?u=" + encodeURIComponent(pageURL) 
+
+        let bits = sjcl.hash.sha256.hash(pageURL);
+        let hashed = sjcl.codec.hex.fromBits(bits);
+        let u = serverURL + "/api/lookup?h=" + hashed;
+
         console.log("background.js: server lookup:", u);
         req.open("GET", u);
         req.send();

@@ -1,12 +1,12 @@
 update per-site rules to cover new examples
 chrome store
-add feature to dispute flags
-only send hashed urls for lookups
+(A) add feature to dispute flags
 rename project
-cookie to prevent double-voting
+(A) cookie to prevent double-voting
 add Access-Control-Allow-Origin header on server
 reword: "whitelist" => "list of sites to check"
-tidy up settings page
+(A) tidy up settings page
 set up https on server
 browser action icon should be monochrome until page is scanned
-wire up agree/disagree buttons
+(A) wire up agree/disagree buttons
+tidy up lookup API results
