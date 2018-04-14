@@ -64,7 +64,7 @@ function hitServer(pageURL) {
 
 
 // report a page as sponsored content
-function handleReport(kind, pageURL, title) {
+function handleReport(kind, pageURL, title, quant) {
 
     return new Promise(function(resolve, reject) {
         let req = new XMLHttpRequest();
@@ -83,6 +83,7 @@ function handleReport(kind, pageURL, title) {
         data.append('url', pageURL);
         data.append('title', title);
         data.append('kind', kind);
+        data.append('quant', quant);    // agree +ve or disagree -ve
 
         console.log("background.js sending report: ",req);
         req.send(data);
@@ -164,7 +165,7 @@ browser.runtime.onMessage.addListener(
             case "scanned": return handleScanned(sender, req.result);
             case "iswhitelisted": return handleIsWhitelisted(req.url);
             case "lookuppage": return hitServer(req.url);
-            case "report": return handleReport("sponsored", req.url, (req.title === undefined) ? "" : req.title);
+            case "report": return handleReport("sponsored", req.url, (req.title === undefined) ? "" : req.title, req.quant);
             case "getopts": return getOpts();
             case "setopts": return setOpts(req.opts);
         }

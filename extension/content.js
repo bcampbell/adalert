@@ -33,15 +33,18 @@ function build(content) {
 
 
 
-var holder = null;
-
 
 function showWarnings(warnings) {
 
     var tmpl = `<div class="XYZZY-sticker-warning">{{msg}}</div>`;
 
-
-    if (holder===null) {
+    let holder = document.querySelector("#XYZZY-holder");
+    if (holder) {
+        // clear old guff
+        while (holder.hasChildNodes()) {
+            holder.removeChild(holder.lastChild);
+        }
+    } else {
         holder = document.createElement('div');
         holder.id = "XYZZY-holder";
         document.body.insertBefore(holder, document.body.childNodes[0]);
@@ -199,6 +202,7 @@ function checkPage(force) {
     if (force===undefined) {
         force = false;
     }
+    // TODO: should scan page for canonical and alternate URLs
     var pageURL = _window.location.href;
     console.log("scanning " + pageURL);
 

@@ -37,7 +37,7 @@ function configPopup(tab, pageStatus) {
 
 
     if (pageStatus.warnings.length > 0) {
-        addWarnings(main, tab.url, pageStatus.warnings);
+        addWarnings(main, tab, pageStatus.warnings);
         let foo = [atRefs, "This looks like #sponsored content"].join(" ");
         addTweetCallToAction(main, tab.url, foo );
     } else if (pageStatus.indicative) {
@@ -136,7 +136,7 @@ function addAddToWhiteList(container, pageURL) {
 }
 
 function addReportButton(container, tab) {
-
+    // TODO: should pick out the canonical url
     let pageURL = tab.url;
     let title = tab.title;
 
@@ -163,14 +163,19 @@ function addReportButton(container, tab) {
 }
 
 
-function addWarnings(container, pageURL, warnings) {
+function addWarnings(container, tab, warnings) {
+    let pageURL = tab.url
+    let title = tab.title
+
     let tmpl = `<div>
     <div class="sticker sticker-warning"><span class="oi" data-glyph="warning" title="warning" aria-hidden="true"> {{msg}}</div>
     <div class="voting">
-         <a id="action-agree" class="btn"><span class="oi" data-glyph="thumb-up" title="agree" aria-hidden="true"></a> ({{agreeCnt}} agree)
-         <a id="action-disagree" class="btn"><span class="oi" data-glyph="thumb-down" title="disagree" aria-hidden="true"></a> ({{disagreeCnt}} disagree)
+         <a class="action-agree btn"><span class="oi" data-glyph="thumb-up" title="agree" aria-hidden="true"></a> ({{agreeCnt}} agree)
+         <a class="action-disagree btn"><span class="oi" data-glyph="thumb-down" title="disagree" aria-hidden="true"></a> ({{disagreeCnt}} disagree)
     </div>
 </div>`;
+
+    // TODO: send canonical (and alternate) URLs!
 
     for( let i=0; i<warnings.length; i++) {
         let w = warnings[i];
@@ -180,6 +185,36 @@ function addWarnings(container, pageURL, warnings) {
             disagreeCnt: w.against
         });
         container.append(el); 
+    }
+
+    let agreeButtons = container.querySelectorAll(".voting .action-agree");
+    for (let i=0; i<agreeButtons.length; i++) {
+        agreeButtons[i].addEventListener("click", function( event ) {
+            event.preventDefault();
+            browser.runtime.sendMessage({'action':"report", 'url': pageURL, 'title': title, 'quant':1})
+                .then( function() {
+                    // now rescan the page and show the results
+                    browser.tabs.sendMessage(tab.id, {action: "check"})
+                        .then( function(results) {
+                            configPopup(tab,results);
+                        });
+                });
+        }, false);
+    }
+
+    let disagreeButtons = container.querySelectorAll(".voting .action-disagree");
+    for (let i=0; i<disagreeButtons.length; i++) {
+        disagreeButtons[i].addEventListener("click", function( event ) {
+            event.preventDefault();
+            browser.runtime.sendMessage({'action':"report", 'url': pageURL, 'title': title, 'quant':-1})
+                .then( function() {
+                    // now rescan the page and show the results
+                    browser.tabs.sendMessage(tab.id, {action: "check"})
+                        .then( function(results) {
+                            configPopup(tab,results);
+                        });
+                });
+        }, false);
     }
 }
 

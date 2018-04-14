@@ -126,6 +126,7 @@ func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 // TODO: should support passing in multiple URLs (making sure one is marked canonical)
+// TODO: should do some basic sanity checking on URL (reject malforms urls)
 func (srv *Server) reportHandler(w http.ResponseWriter, req *http.Request) {
 
 	kind := req.FormValue("kind")
