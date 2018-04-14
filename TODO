@@ -1,12 +1,9 @@
 update per-site rules to cover new examples
 chrome store
-rename project
-(A) cookie to prevent double-voting
+(A) client-side mechanism to prevent double-voting
 add Access-Control-Allow-Origin header on server
 reword: "whitelist" => "list of sites to check"
-(A) tidy up settings page
-set up https on server
 browser action icon should be monochrome until page is scanned
-tidy up lookup API results
 extract canonical and alternate urls in content.js and use in API calls
 use unsourced.org subdomain to host server
+options page: disable Save button unless changes pending

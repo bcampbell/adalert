@@ -1,10 +1,10 @@
 {
   "manifest_version": 2,
-  "name": "oDSponsoredContent",
+  "name": "AdDetect",
   "version": "1.0",
   "author": "Ben Campbell",
 
-  "description": "Warns about sponsored content on news articles.",
+  "description": "Warns about sponsored content in news articles.",
 
   "icons": {
     "48": "icons/border-48.png"
@@ -31,7 +31,7 @@
 
   "browser_action": {
     "default_icon": "icons/border-48.png",
-    "default_title": "Sponsored content detector",
+    "default_title": "AdDetect - sponsored content detector",
     "default_popup": "popup.html"
   },
 
