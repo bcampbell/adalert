@@ -129,7 +129,7 @@ type Warning struct {
 }
 
 type Page struct {
-	ID           int64     `json:"id"`
+	ID           int64
 	CanonicalURL string    `json:"canonical_url"`
 	Title        string    `json:"title"`
 	Created      time.Time `json:"created"`
@@ -137,6 +137,7 @@ type Page struct {
 }
 
 // look up a page in the database by hashed url
+// returns nil if no info found
 func (st *Store) PageInfoByHash(hashed string) (*Page, error) {
 	var pageID int64
 	err := st.db.QueryRow(`SELECT page_id FROM url WHERE hash=?`, hashed).Scan(&pageID)

@@ -91,6 +91,11 @@ func (src *Server) Emit500(w http.ResponseWriter, req *http.Request, err error) 
 	fmt.Fprintf(os.Stderr, "ERR: %s\n", err)
 }
 
+type LookupResult struct {
+	Status string `json:"status"`
+	*Page
+}
+
 func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 
 	q := req.URL.Query()
@@ -98,9 +103,9 @@ func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 	h := q.Get("h")
 
 	if u == "" {
-		fmt.Printf("Lookup: %s\n", u)
-	} else {
 		fmt.Printf("Lookup: %s\n", h)
+	} else {
+		fmt.Printf("Lookup: %s\n", u)
 	}
 
 	if h == "" && u != "" {
@@ -113,12 +118,16 @@ func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	if inf == nil {
-		return // TODO: return some json to say not found!
+	result := LookupResult{}
+	if inf != nil {
+		result.Status = "ok"
+		result.Page = inf
+	} else {
+		result.Status = "notfound"
 	}
 
 	enc := json.NewEncoder(w)
-	err = enc.Encode(inf)
+	err = enc.Encode(result)
 	if err != nil {
 		srv.Emit500(w, req, err)
 		return

@@ -35,15 +35,11 @@ function hitServer(pageURL) {
                 return;
             }
 
-            let inf = {};
-            if( this.responseText) {
-                inf = JSON.parse(this.responseText);
-                console.log("server returns json: ",inf);
-            } else {
-                inf['warnings'] = [];
-                console.log("server returns: ",this.responseText);
+            let inf = JSON.parse(this.responseText);
+            console.log("server returns: ",this.responseText);
+            if(inf.status != 'ok' ) {
+                inf.warnings = [];  // fudge
             }
-            inf['status'] = "ok";
             resolve(inf);
         });
         req.addEventListener("error", function() {
