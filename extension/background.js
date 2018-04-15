@@ -140,7 +140,7 @@ function getOpts() {
             cachedOpts = opts;
             // defaults:
             if(opts.whitelist===undefined) {
-                opts.whitelist = ["scumways.com","foo.net"];
+                opts.whitelist = [];
             }
             if(opts.checkarts===undefined) {
                 opts.checkarts = true;
