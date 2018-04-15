@@ -1,7 +1,8 @@
 "use strict";
 
-//var serverURL = "http://oddie.scumways.com:4000";
-var serverURL = "http://localhost:4000";
+// this will change, but need to sort out a domain name
+var serverURL = "http://oddie.scumways.com:4000";
+//var serverURL = "http://localhost:4000";
 
 
 // content page has completed its scan - update popup button state accordingly
