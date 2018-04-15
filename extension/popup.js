@@ -73,7 +73,6 @@ function addNotScanned(container, tab ) {
         event.preventDefault();
         browser.tabs.sendMessage(tab.id, {action: "check"})
             .then( function(results) {
-               console.log("FOOK:",results);
                configPopup(tab,results);
             });
     }, false);
@@ -89,7 +88,6 @@ function addServerError(container, tab, errMsg) {
         event.preventDefault();
         browser.tabs.sendMessage(tab.id, {action: "check"})
             .then( function(results) {
-               console.log("FOOK:",results);
                configPopup(tab,results);
             });
     }, false);
@@ -254,7 +252,7 @@ browser.tabs.query({
             // ask content.js for it's page scan result
             let s = browser.tabs.sendMessage(tab.id, {action: "status"});
             s.then(response => {
-                //console.log("popup.js: response from content.js: ", response);
+                console.log("popup.js: response from content.js: ", response);
                 configPopup(tab, response);
               });
         }

@@ -157,7 +157,7 @@ function getOpts() {
 // handle messages from content script or popup
 browser.runtime.onMessage.addListener(
     function(req, sender) {
-        //console.log("background.js: got ", req);
+        console.log("background.js: got ", req);
         switch (req.action) {
             case "scanned": return handleScanned(sender, req.result);
             case "iswhitelisted": return handleIsWhitelisted(req.url);

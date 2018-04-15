@@ -273,6 +273,7 @@ browser.runtime.onMessage.addListener(request => {
     switch( request.action ) {
         case "status":
             // popup is requesting the results of our page scan
+            console.log("pageStatus: ",pageStatus);
             return Promise.resolve(pageStatus);
         case "check":
             return checkPage(true).then(function(results){
