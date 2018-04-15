@@ -103,9 +103,9 @@ func (srv *Server) lookupHandler(w http.ResponseWriter, req *http.Request) {
 	h := q.Get("h")
 
 	if u == "" {
-		fmt.Printf("Lookup: %s\n", h)
+		log.Printf("%s Lookup: %s\n", req.RemoteAddr, h)
 	} else {
-		fmt.Printf("Lookup: %s\n", u)
+		log.Printf("%s Lookup: %s\n", req.RemoteAddr, u)
 	}
 
 	if h == "" && u != "" {
@@ -160,7 +160,7 @@ func (srv *Server) reportHandler(w http.ResponseWriter, req *http.Request) {
 		quant = 1
 	}
 
-	fmt.Printf("report %s: %s %s %d\n", kind, u, title, quant)
+	log.Printf("%s report %s: %s %s %d\n", req.RemoteAddr, kind, u, title, quant)
 
 	err := srv.store.Report([]string{u}, title, kind, quant)
 	if err != nil {
