@@ -1,7 +1,7 @@
 "use strict";
 
 // this will change, but need to sort out a domain name
-var serverURL = "http://oddie.scumways.com:4000";
+var serverURL = "https://adalert.org.uk";
 //var serverURL = "http://localhost:4000";
 
 
@@ -10,15 +10,18 @@ function handleScanned(sender, pageStatus) {
     let n = pageStatus.warnings.length;
     if (n>0) {
         // there are warnings
+        browser.browserAction.setIcon({path: "icons/icon-red-48.png"});
         var badgeTxt = n.toString();
         browser.browserAction.setBadgeBackgroundColor({color:"rgb(217, 0, 0)", tabId: sender.tab.id});
         browser.browserAction.setBadgeText({text: badgeTxt, tabId: sender.tab.id});
     } else if( pageStatus.indicative) {
+        browser.browserAction.setIcon({path: "icons/icon-48.png"});
         // show neutralish-looking badge
         browser.browserAction.setBadgeText({text: "?", tabId: sender.tab.id});
         browser.browserAction.setBadgeBackgroundColor({color:"#888", tabId: sender.tab.id});
     } else {
         // nothing to report
+        browser.browserAction.setIcon({path: "icons/icon-grey-48.png"});
         browser.browserAction.setBadgeText({text: "", tabId: sender.tab.id});
     }
     return Promise.resolve();

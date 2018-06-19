@@ -1,18 +1,18 @@
 {
   "manifest_version": 2,
-  "name": "AdDetect",
+  "name": "AdAlert",
   "version": "0.1",
   "author": "Ben Campbell",
 
   "description": "Warns about sponsored content in news articles.",
 
   "icons": {
-    "48": "icons/border-48.png"
+    "48": "icons/icon-48.png"
   },
 
 
   "permissions": [
-    "*://oddie.scumways.com/*",
+    "*://adalert.org.uk/*",
     "*://localhost/*",
     "tabs","storage"
   ],
@@ -30,8 +30,8 @@
   ],
 
   "browser_action": {
-    "default_icon": "icons/border-48.png",
-    "default_title": "AdDetect - sponsored content detector",
+    "default_icon": "icons/icon-grey-48.png",
+    "default_title": "AdAlert - sponsored content detector",
     "default_popup": "popup.html"
   },
 
