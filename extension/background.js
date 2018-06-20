@@ -1,8 +1,20 @@
 "use strict";
 
-// this will change, but need to sort out a domain name
 var serverURL = "https://adalert.org.uk";
-//var serverURL = "http://localhost:4000";
+
+
+var defaultWhitelist = [
+    "www.theguardian.com",
+    "www.express.co.uk",
+    "www.dailymail.co.uk",
+    "www.standard.co.uk",
+    "www.mirror.co.uk",
+    "www.telegraph.co.uk",
+    "www.buzzfeed.com",
+    "www.telegraph.co.uk",
+    "www.thesun.co.uk"
+];
+
 
 
 // content page has completed its scan - update popup button state accordingly
@@ -143,7 +155,7 @@ function getOpts() {
             cachedOpts = opts;
             // defaults:
             if(opts.whitelist===undefined) {
-                opts.whitelist = [];
+                opts.whitelist = defaultWhitelist;
             }
             if(opts.checkarts===undefined) {
                 opts.checkarts = true;
