@@ -5,6 +5,7 @@
   "author": "Ben Campbell",
 
   "description": "Warns about sponsored content in news articles.",
+  "homepage_url": "https://adalert.org.uk",
 
   "icons": {
     "48": "icons/icon-48.png"
